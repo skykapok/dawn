@@ -18,10 +18,13 @@ static struct WINDOWGAME *G = NULL;
 
 static const char * startscript =
 "local path, script = ...\n"
-"require(\"ejoy2d.framework\").WorkDir = path..'/'\n"
+"require('ejoy2d.framework').WorkDir = path..'/'\n"
 "assert(script, 'I need a script name')\n"
-"script = path..[[/]]..script\n"
-"package.path = path .. [[/?.lua;]] .. path .. [[/?/init.lua;./?.lua;./?/init.lua]]\n"
+"script = path..'/'..script\n"
+"package.path = './?.lua;./?/init.lua;'\n"
+"package.path = package.path..path..'/?.lua;'\n"
+"package.path = package.path..path..'/?/init.lua;'\n"
+"package.path = package.path..path..'/src/?.lua;'\n"
 "local f = loadfile(script)\n"
 "f(script)\n";
 

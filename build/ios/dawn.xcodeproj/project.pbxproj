@@ -14,6 +14,7 @@
 		5E4507C519AEF021001BB86D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E4507C419AEF021001BB86D /* main.m */; };
 		5E4507C919AEF021001BB86D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E4507C819AEF021001BB86D /* AppDelegate.m */; };
 		5E4507CB19AEF021001BB86D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5E4507CA19AEF021001BB86D /* Images.xcassets */; };
+		5E5FDBD219B32B54009A6622 /* package in Resources */ = {isa = PBXBuildFile; fileRef = 5E5FDBD119B32B54009A6622 /* package */; };
 		5EF01D5419B03F4100020640 /* EJViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5019B03F4100020640 /* EJViewController.m */; };
 		5EF01D5519B03F4100020640 /* font.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5119B03F4100020640 /* font.m */; };
 		5EF01D5619B03F4100020640 /* winfw.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5219B03F4100020640 /* winfw.c */; };
@@ -84,6 +85,7 @@
 		5E4507C719AEF021001BB86D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		5E4507C819AEF021001BB86D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		5E4507CA19AEF021001BB86D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		5E5FDBD119B32B54009A6622 /* package */ = {isa = PBXFileReference; lastKnownFileType = folder; name = package; path = ../../res/package; sourceTree = "<group>"; };
 		5EF01D4F19B03F4100020640 /* EJViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EJViewController.h; sourceTree = "<group>"; };
 		5EF01D5019B03F4100020640 /* EJViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EJViewController.m; sourceTree = "<group>"; };
 		5EF01D5119B03F4100020640 /* font.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = font.m; sourceTree = "<group>"; };
@@ -122,7 +124,7 @@
 		5EF01D7619B03F7A00020640 /* sprite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sprite.h; sourceTree = "<group>"; };
 		5EF01D7719B03F7A00020640 /* spritepack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = spritepack.c; sourceTree = "<group>"; };
 		5EF01D7819B03F7A00020640 /* spritepack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spritepack.h; sourceTree = "<group>"; };
-		5EF01D7919B03F7A00020640 /* texture.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = texture.c; sourceTree = "<group>"; };
+		5EF01D7919B03F7A00020640 /* texture.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = texture.c; sourceTree = "<group>"; };
 		5EF01D7A19B03F7A00020640 /* texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture.h; sourceTree = "<group>"; };
 		5EF01D7C19B03F7A00020640 /* lapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lapi.c; sourceTree = "<group>"; };
 		5EF01D7D19B03F7A00020640 /* lapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lapi.h; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 		5E4507AC19AEF021001BB86D = {
 			isa = PBXGroup;
 			children = (
+				5E5FDBD119B32B54009A6622 /* package */,
 				5EF01DEC19B05AC900020640 /* src */,
 				5EF01DE619B03F9F00020640 /* ejoy2d */,
 				5EF01D5719B03F7A00020640 /* lib */,
@@ -380,6 +383,7 @@
 			buildPhases = (
 				5E4507B119AEF021001BB86D /* Sources */,
 				5E4507B219AEF021001BB86D /* Frameworks */,
+				5E5FDBD419B33E46009A6622 /* Run Script */,
 				5E4507B319AEF021001BB86D /* Resources */,
 			);
 			buildRules = (
@@ -425,11 +429,30 @@
 				5E4507C319AEF021001BB86D /* InfoPlist.strings in Resources */,
 				5EF01DE719B03F9F00020640 /* ejoy2d in Resources */,
 				5E4507CB19AEF021001BB86D /* Images.xcassets in Resources */,
+				5E5FDBD219B32B54009A6622 /* package in Resources */,
 				5EF01DED19B05AC900020640 /* src in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5E5FDBD419B33E46009A6622 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "find ../../src -exec touch {} \\;\nfind ../../res/package -exec touch {} \\;";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5E4507B119AEF021001BB86D /* Sources */ = {
@@ -586,6 +609,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "dawn/dawn-Prefix.pch";
 				INFOPLIST_FILE = "dawn/dawn-Info.plist";
@@ -599,6 +623,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "dawn/dawn-Prefix.pch";
 				INFOPLIST_FILE = "dawn/dawn-Info.plist";

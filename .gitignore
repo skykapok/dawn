@@ -3,3 +3,5 @@
 # ios
 *.xcworkspace
 xcuserdata
+
+res/package
