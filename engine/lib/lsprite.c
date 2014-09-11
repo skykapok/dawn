@@ -124,6 +124,33 @@ fill_srt(lua_State *L, struct srt *srt, int idx) {
 	srt->rot = rot * (1024.0 / 360.0);
 }
 
+static void
+fill_pp(lua_State *L, struct program_param *pp, int idx) {
+	if (lua_isnoneornil(L, idx)) {
+		pp->n = 0;
+		return;
+	}
+	int n = lua_rawlen(L, idx);
+	int i, j;
+	for (i=0;i<n;i++) {
+		lua_rawgeti(L, idx, i+1);
+        int pi = lua_gettop(L);
+		// index
+		lua_rawgeti(L, pi, 1);
+		pp->index[i] = luaL_checkint(L, -1);
+		// value
+		lua_rawgeti(L, pi, 2);
+		int vi = lua_gettop(L);
+		int vn = lua_rawlen(L, -1);
+		for (j=0;j<vn;j++) {
+			lua_rawgeti(L, vi, j+1);
+			pp->value[i][j] = (float)luaL_checknumber(L, -1);
+		}
+		lua_pop(L, vn + 3);
+	}
+    pp->n = n;
+}
+
 static int
 lgenoutline(lua_State *L) {
   label_gen_outline(lua_toboolean(L, 1));
@@ -463,22 +490,22 @@ lsettext(lua_State *L) {
 		lua_setuservalue(L, 1);
     return 0;
   }
-  
+
   s->data.rich_text = NULL;
   if (!lua_istable(L, 2) || lua_rawlen(L, 2) != 2) {
     return luaL_error(L, "rich text must has a table with two items");
   }
-  
+
   lua_rawgeti(L, 2, 1);
   const char *txt = luaL_checkstring(L, -1);
   lua_pop(L, 1);
-  
+
   lua_rawgeti(L, 2, 2);
 	int cnt = lua_rawlen(L, -1);
   lua_pop(L, 1);
-  
+
 	struct rich_text *rich = (struct rich_text*)lua_newuserdata(L, sizeof(struct rich_text));
-	
+
 	rich->text = txt;
   rich->count = cnt;
 	int size = cnt * sizeof(struct label_field);
@@ -496,13 +523,13 @@ lsettext(lua_State *L) {
 		lua_rawgeti(L, -1, 1);  //start
 		((struct label_field*)(fields+i))->start = luaL_checkinteger(L, -1);
 		lua_pop(L, 1);
-    
+
     lua_rawgeti(L, -1, 2);  //end
 		((struct label_field*)(fields+i))->end = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
 		lua_rawgeti(L, -1, 3);  //color
-		((struct label_field*)(fields+i))->color = luaL_checkunsigned(L, -1); 
+		((struct label_field*)(fields+i))->color = luaL_checkunsigned(L, -1);
 		lua_pop(L, 1);
 
 		//extend here
@@ -783,9 +810,10 @@ static int
 ldraw(lua_State *L) {
 	struct sprite *s = self(L);
 	struct srt srt;
-
 	fill_srt(L,&srt,2);
-	sprite_draw(s, &srt);
+	struct program_param pp;
+	fill_pp(L,&pp,3);
+	sprite_draw(s, &srt, &pp);
 	return 0;
 }
 
@@ -900,7 +928,7 @@ lmatrix_multi_draw(lua_State *L) {
 			s->t.color = (uint32_t)lua_tounsigned(L, -1);
 			lua_pop(L, 2);
 
-			sprite_draw(s, NULL);
+			sprite_draw(s, NULL, NULL);
 		}
 	} else {
 		for (i = 0; i < cnt; i++) {
@@ -911,7 +939,7 @@ lmatrix_multi_draw(lua_State *L) {
 			s->t.color = (uint32_t)lua_tounsigned(L, -1);
 			lua_pop(L, 2);
 
-			sprite_draw(s, NULL);
+			sprite_draw(s, NULL, NULL);
 		}
 	}
 

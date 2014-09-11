@@ -2,6 +2,7 @@
 #define EJOY_2D_SPRITE_H
 
 #include "spritepack.h"
+#include "shader.h"
 #include "matrix.h"
 
 #include <lua.h>
@@ -54,7 +55,7 @@ void sprite_init(struct sprite *, struct sprite_pack * pack, int id, int sz);
 // return action frame number, -1 means action is not exist
 int sprite_action(struct sprite *, const char * action);
 
-void sprite_draw(struct sprite *, struct srt *srt);
+void sprite_draw(struct sprite *, struct srt *srt, struct program_param *pp);
 void sprite_draw_as_child(struct sprite *, struct srt *srt, struct matrix *mat, uint32_t color);
 struct sprite * sprite_test(struct sprite *, struct srt *srt, int x, int y);
 

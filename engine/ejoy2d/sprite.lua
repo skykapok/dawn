@@ -8,18 +8,22 @@ local method = c.method
 local method_fetch = method.fetch
 local method_test = method.test
 local method_fetch_by_index = method.fetch_by_index
+local method_draw = method.draw
 local fetch
 local test
 
 local get = c.get
 local set = c.set
+local pp_map = {}
 
 local set_program = set.program
 function set:program(prog)
 	if prog == nil then
 		set_program(self)
+		pp_map[self] = nil
 	else
 		set_program(self, shader.id(prog))
+		pp_map[self] = shader.param(prog)
 	end
 end
 
@@ -38,12 +42,17 @@ function sprite_meta.__index(spr, key)
 	if method[key] then
 		return method[key]
 	end
+
 	local getter = get[key]
 	if getter then
 		return getter(spr)
 	end
-	local child = fetch(spr, key)
 
+	if key == "program_param" then
+		return pp_map[spr]
+	end
+
+	local child = fetch(spr, key)
 	if child then
 		return child
 	else
@@ -85,9 +94,15 @@ local function fetch_by_index(spr, index)
 	end
 end
 
+local function draw(spr, srt)
+	local pp = spr.program_param.gen_pp()
+	return method_draw(spr, srt, pp)
+end
+
 method.fetch = fetch
 method.fetch_by_index = fetch_by_index
 method.test = test
+method.draw = draw
 
 local sprite = {}
 

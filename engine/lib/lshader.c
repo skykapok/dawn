@@ -23,7 +23,7 @@ lunload(lua_State *L) {
 
 /*
 	int texture
-	table float[16]  
+	table float[16]
 	uint32_t color
 	uint32_t additive
  */
@@ -34,7 +34,7 @@ ldraw(lua_State *L) {
 	if (texid == 0) {
 		lua_pushboolean(L,0);
 		return 1;
-	} 
+	}
 	luaL_checktype(L, 2, LUA_TTABLE);
 	uint32_t color = 0xffffffff;
 
@@ -107,10 +107,21 @@ lclear(lua_State *L) {
 	return 0;
 }
 
-int 
+static int
+lconfig(lua_State *L) {
+	int prog = luaL_checkinteger(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	const char *tp = luaL_checkstring(L, 3);
+	int i = shader_param_config(prog, name, tp);
+	lua_pushinteger(L, i);
+	return 1;
+}
+
+int
 ejoy2d_shader(lua_State *L) {
 	luaL_Reg l[] = {
 		{"load", lload},
+		{"config", lconfig},
 		{"unload", lunload},
 		{"draw", ldraw},
 		{"blend", lblend},

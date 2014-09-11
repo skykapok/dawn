@@ -158,6 +158,12 @@ local shader_name = {
 	BLEND = 5,
 }
 
+local shader_param_desc = {
+}
+
+local CUSTOM_BEGIN = 6
+local custom_id = CUSTOM_BEGIN
+
 function shader.init()
 	s.load(shader_name.NORMAL, PRECISION .. sprite_fs, PRECISION .. sprite_vs)
 	s.load(shader_name.TEXT, PRECISION .. text_fs, PRECISION .. sprite_vs)
@@ -174,6 +180,42 @@ shader.clear = s.clear
 function shader.id(name)
 	local id = assert(shader_name[name] , "Invalid shader name " .. name)
 	return id
+end
+
+function shader.load(name, fs, vs, param_desc)
+	assert(shader_name[name] == nil, "Duplicate shader name " .. name)
+	s.load(custom_id, PRECISION .. fs, PRECISION .. vs)
+	shader_name[name] = custom_id
+
+	local desc = {}
+	for k,v in pairs(param_desc) do
+		desc[k] = s.config(custom_id, k, v)
+	end
+	shader_param_desc[name] = desc
+
+	custom_id = custom_id + 1
+end
+
+function shader.param(name)
+	local id = shader.id(name)
+	if id < CUSTOM_BEGIN then return end
+
+	local desc = shader_param_desc[name]
+	local param = {}
+	param.gen_pp = function ()
+		local pp = {}
+		for k,v in pairs(param) do
+			if k ~= "gen_pp" then
+				local idx = assert(desc[k], "Unconfigured param " .. k)
+				local val = v
+				if type(v) == "number" then val = {v} end
+				pp[#pp+1] = {idx, val}
+			end
+		end
+		return pp
+	end
+
+	return param
 end
 
 return shader

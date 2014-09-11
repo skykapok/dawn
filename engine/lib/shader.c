@@ -21,10 +21,16 @@ struct program {
 	GLuint prog;
 	GLint additive;
 	uint32_t arg_additive;
-	
+
 	GLint mask;
-  float arg_mask_x;
-  float arg_mask_y;
+	float arg_mask_x;
+	float arg_mask_y;
+};
+
+struct param_cfg {
+	int n;
+	GLint loc[MAX_PARAM];
+	int tp[MAX_PARAM];
 };
 
 struct vertex {
@@ -42,6 +48,7 @@ struct quad {
 struct render_state {
 	int current_program;
 	struct program program[MAX_PROGRAM];
+	struct param_cfg param_cfg[MAX_PROGRAM];
 	int tex;
 	int object;
 	int blendchange;
@@ -75,7 +82,7 @@ shader_init() {
 		idxs[i*6+4] = i*4+2;
 		idxs[i*6+5] = i*4+3;
 	}
-	
+
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idxs), idxs, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &rs->vertex_buffer);
@@ -104,13 +111,13 @@ shader_reset()
 static GLuint
 compile(const char * source, int type) {
 	GLint status;
-	
+
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, NULL);
 	glCompileShader(shader);
-	
+
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	
+
 	if (status == GL_FALSE) {
 		char buf[1024];
 		GLint len;
@@ -129,7 +136,7 @@ static void
 link(struct program *p) {
 	GLint status;
 	glLinkProgram(p->prog);
-	
+
 	glGetProgramiv(p->prog, GL_LINK_STATUS, &status);
 	if (status == 0) {
 		fault("Can't link program");
@@ -155,14 +162,14 @@ static void
 program_init(struct program * p, const char *FS, const char *VS) {
 	// Create shader program.
 	p->prog = glCreateProgram();
-	
+
 	GLuint fs = compile(FS, GL_FRAGMENT_SHADER);
 	if (fs == 0) {
 		fault("Can't compile fragment shader");
 	} else {
 		glAttachShader(p->prog, fs);
 	}
-	
+
 	GLuint vs = compile(VS, GL_VERTEX_SHADER);
 	if (vs == 0) {
 		fault("Can't compile vertex shader");
@@ -179,30 +186,32 @@ program_init(struct program * p, const char *FS, const char *VS) {
 	p->additive = glGetUniformLocation(p->prog, "additive");
 	p->arg_additive = 0;
 	set_color(p->additive, 0);
-	
+
 	p->mask = glGetUniformLocation(p->prog, "mask");
-  p->arg_mask_x = 0.0f;
-  p->arg_mask_y = 0.0f;
-  if (p->mask != -1) {
-    glUniform2f(p->mask, 0.0f, 0.0f);
-  }
-		
+	p->arg_mask_x = 0.0f;
+	p->arg_mask_y = 0.0f;
+	if (p->mask != -1) {
+		glUniform2f(p->mask, 0.0f, 0.0f);
+	}
+
 	glDetachShader(p->prog, fs);
 	glDeleteShader(fs);
 	glDetachShader(p->prog, vs);
 	glDeleteShader(vs);
 }
 
-void 
+void
 shader_load(int prog, const char *fs, const char *vs) {
 	struct render_state *rs = RS;
 	assert(prog >=0 && prog < MAX_PROGRAM);
 	struct program * p = &rs->program[prog];
 	assert(p->prog == 0);
+	struct param_cfg * pc = &rs->param_cfg[prog];
+	assert(pc->n == 0);
 	program_init(p, fs, vs);
 }
 
-void 
+void
 shader_unload() {
 	if (RS == NULL) {
 		return;
@@ -275,14 +284,75 @@ shader_program(int n, uint32_t arg) {
 }
 
 void
+shader_param(struct program_param *pp) {
+	struct param_cfg * pc = &RS->param_cfg[RS->current_program];
+	int i;
+	for (i=0;i<pp->n;i++) {
+		int idx = pp->index[i];
+		assert(idx < pc->n && idx >= 0);
+		GLint loc = pc->loc[idx];
+		switch (pc->tp[idx]) {
+		case PROG_PARAM_1F:
+			glUniform1f(loc,
+				pp->value[i][0]);
+			break;
+		case PROG_PARAM_2F:
+			glUniform2f(loc,
+				pp->value[i][0],
+				pp->value[i][1]);
+			break;
+		case PROG_PARAM_3F:
+			glUniform3f(loc,
+				pp->value[i][0],
+				pp->value[i][1],
+				pp->value[i][2]);
+			break;
+		case PROG_PARAM_4F:
+			glUniform4f(loc,
+				pp->value[i][0],
+				pp->value[i][1],
+				pp->value[i][2],
+				pp->value[i][3]);
+			break;
+		}
+	}
+}
+
+int
+shader_param_config(int prog, const char *name, const char *tp) {
+	struct program * p = &RS->program[prog];
+	struct param_cfg * pc = &RS->param_cfg[prog];
+	GLint loc = glGetUniformLocation(p->prog, name);
+	if (loc == -1)
+		return -1;
+	if (pc->n == MAX_PARAM)
+		return -1;
+
+	pc->loc[pc->n] = loc;
+	if (strcmp(tp, "1f") == 0) {
+		pc->tp[pc->n] = PROG_PARAM_1F;
+	} else if (strcmp(tp, "2f") == 0) {
+		pc->tp[pc->n] = PROG_PARAM_2F;
+	} else if (strcmp(tp, "3f") == 0) {
+		pc->tp[pc->n] = PROG_PARAM_3F;
+	} else if (strcmp(tp, "4f") == 0) {
+		pc->tp[pc->n] = PROG_PARAM_4F;
+	} else {
+		return -1;
+	}
+
+	return pc->n++;
+}
+
+void
 shader_mask(float x, float y) {
 	struct program *p = &RS->program[RS->current_program];
-  if (!p || p->mask == -1)
-    return;
-  if (p->arg_mask_x == x && p->arg_mask_y == y)
-    return;
-  p->arg_mask_x = x;
-  p->arg_mask_y = y;
+	if (!p || p->mask == -1)
+		return;
+	if (p->arg_mask_x == x && p->arg_mask_y == y)
+		return;
+	p->arg_mask_x = x;
+	p->arg_mask_y = y;
 //  rs_commit();
 	glUniform2f(p->mask, x, y);
 }
@@ -329,7 +399,7 @@ shader_drawpolygon(int n, const float *vb, uint32_t color) {
 	} while (i<n-1);
 }
 
-void 
+void
 shader_flush() {
 	rs_commit();
 }

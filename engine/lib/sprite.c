@@ -91,15 +91,15 @@ sprite_drawpolygon(struct pack_polygon *poly, const struct srt *srt, const struc
 		for (j=0;j<pn;j++) {
 			int xx = p->screen_coord[j*2+0];
 			int yy = p->screen_coord[j*2+1];
-		
-			
+
+
 			float vx = (xx * m[0] + yy * m[2]) / 1024 + m[4];
 			float vy = (xx * m[1] + yy * m[3]) / 1024 + m[5];
 			float tx = p->texture_coord[j*2+0];
 			float ty = p->texture_coord[j*2+1];
 
 			screen_trans(&vx,&vy);
-	
+
 			texture_coord(p->texid, &tx, &ty);
 			vb[j*4+0] = vx;
 			vb[j*4+1] = vy;
@@ -354,12 +354,15 @@ mat_mul(struct matrix *a, struct matrix *b, struct matrix *tmp) {
 }
 
 static void
-switch_program(struct sprite_trans *t, int def) {
+switch_program(struct sprite_trans *t, struct program_param *pp, int def) {
 	int prog = t->program;
 	if (prog == PROGRAM_DEFAULT) {
 		prog = def;
 	}
 	shader_program(prog, t->additive);
+	if (pp) {
+		shader_param(pp);
+	}
 }
 
 static void
@@ -482,8 +485,8 @@ child_pos(struct sprite *s, struct srt *srt, struct sprite_trans *ts, struct spr
 		default:
 			return 1;
 		}
-	} 
-	
+	}
+
 	if (s->type != TYPE_ANIMATION){
 		return 1;
 	}
@@ -533,29 +536,29 @@ drawparticle(struct sprite *s, struct particle_system *ps, struct pack_picture *
 }
 
 static int
-draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts) {
+draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts, struct program_param *param) {
 	struct sprite_trans temp;
 	struct matrix temp_matrix;
 	struct sprite_trans *t = trans_mul(&s->t, ts, &temp, &temp_matrix);
 	switch (s->type) {
 	case TYPE_PICTURE:
-		switch_program(t, PROGRAM_PICTURE);
+		switch_program(t, param, PROGRAM_PICTURE);
 		sprite_drawquad(s->s.pic, s->data.mask, srt, t);
 		return 0;
 	case TYPE_POLYGON:
-		switch_program(t, PROGRAM_PICTURE);
+		switch_program(t, param, PROGRAM_PICTURE);
 		sprite_drawpolygon(s->s.poly, srt, t);
 		return 0;
 	case TYPE_LABEL:
 		if (s->data.rich_text) {
 			t->program = PROGRAM_DEFAULT;	// label never set user defined program
-			switch_program(t, s->s.label->edge ? PROGRAM_TEXT_EDGE : PROGRAM_TEXT);
+			switch_program(t, param, s->s.label->edge ? PROGRAM_TEXT_EDGE : PROGRAM_TEXT);
 			label_draw(s->data.rich_text, s->s.label, srt, t);
 		}
 		return 0;
 	case TYPE_ANCHOR:
 		if (s->data.anchor->ps){
-			switch_program(t, PROGRAM_PICTURE);
+			switch_program(t, param, PROGRAM_PICTURE);
 			drawparticle(s, s->data.anchor->ps, s->data.anchor->pic, srt);
 		}
 		anchor_update(s, srt, t);
@@ -590,7 +593,7 @@ draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts) {
 		struct sprite_trans temp2;
 		struct matrix temp_matrix2;
 		struct sprite_trans *ct = trans_mul(&pp->t, t, &temp2, &temp_matrix2);
-		scissor += draw_child(child, srt, ct);
+		scissor += draw_child(child, srt, ct, param);
 	}
 	for (i=0;i<scissor;i++) {
 		scissor_pop();
@@ -616,9 +619,9 @@ sprite_child_visible(struct sprite *s, const char * childname) {
 }
 
 void
-sprite_draw(struct sprite *s, struct srt *srt) {
+sprite_draw(struct sprite *s, struct srt *srt, struct program_param *pp) {
 	if (s->visible) {
-		draw_child(s, srt, NULL);
+		draw_child(s, srt, NULL, pp);
 	}
 }
 
@@ -630,7 +633,7 @@ sprite_draw_as_child(struct sprite *s, struct srt *srt, struct matrix *mat, uint
 		st.color = color;
 		st.additive = 0;
 		st.program = PROGRAM_DEFAULT;
-		draw_child(s, srt, &st);
+		draw_child(s, srt, &st, NULL);
 	}
 }
 
@@ -1007,7 +1010,7 @@ sprite_setframe(struct sprite *s, int frame, bool force_child) {
 	int i;
 	struct pack_animation * ani = s->s.ani;
 	for (i=0;i<ani->component_number;i++) {
-		if (ani->component[i].id != ANCHOR_ID && 
+		if (ani->component[i].id != ANCHOR_ID &&
 				(force_child || ani->component[i].name == NULL)) {
 			int t = sprite_setframe(s->data.children[i],frame, force_child);
 			if (t > total_frame) {
