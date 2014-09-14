@@ -45,7 +45,7 @@ void main(void)
 	vec2 noise_speed = vec2(0.005, -0.08);
 
 	vec2 tc = vec2(v_texcoord.x, pow(v_texcoord.y, 0.1));
-	vec2 nc = tc*tex_scale + t*noise_speed;
+	vec2 nc = fract(tc*tex_scale + t*noise_speed);
 
 	vec4 noise = texture2D(Texture0, nc);
 	float n = mix(noise.x, noise.y, (sin(t) + 1.0) * 0.5);
