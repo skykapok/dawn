@@ -4,10 +4,11 @@ local ejpackage = require "ejpackage"
 local utils = require "utils"
 
 local usage = [[
-Usage: simplepacker inputdir [-o path] [-n name] [-ni] [-ps packsize] [-na] [-raw] [-v]
+Usage: simplepacker inputdir [-o path] [-n name] [-ni] [-np] [-ps packsize] [-na] [-raw] [-v]
   -o: specify output directory
   -n: specify output package name
   -ni: no image, ignore raw image files(png) from the input
+  -np: no pack, do not pack images to large image sheet
   -ps: specify image sheet size, up to 2048. default value is 1024
   -na: no animation, ignore animation description files(.a.lua)
   -raw: write down all data instead of exporting a ejoy2d package
@@ -19,6 +20,7 @@ Usage: simplepacker inputdir [-o path] [-n name] [-ni] [-ps packsize] [-na] [-ra
 local config = {
 	proc_img = true,  -- whether to read raw image
 	proc_anim = true,  -- whether to read anim
+	pack_img = true,
 	output_path = false,
 	output_name = false,
 	pack_size = 1024,
@@ -53,6 +55,8 @@ local function _parse_args(args)
 			i = i + 1
 		elseif arg == "-ni" then
 			config.proc_img = false
+		elseif arg == "-np" then
+			config.pack_img = false
 		elseif arg == "-ps" then
 			local ps = tonumber(args[i + 1])
 			if ps <= 0 or ps > 2048 then
@@ -194,7 +198,7 @@ function run(args)
 	end
 
 	-- pack raw images onto image sheet
-	if #all_imgs > 0 then
+	if config.pack_img then
 		local sheet_map = {}
 		local left_imgs = {}
 
