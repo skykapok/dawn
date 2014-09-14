@@ -285,6 +285,8 @@ shader_program(int n, uint32_t arg) {
 
 void
 shader_param(struct program_param *pp) {
+    rs_commit();
+
 	struct param_cfg * pc = &RS->param_cfg[RS->current_program];
 	int i;
 	for (i=0;i<pp->n;i++) {

@@ -95,8 +95,11 @@ local function fetch_by_index(spr, index)
 end
 
 local function draw(spr, srt)
-	local pp = spr.program_param.gen_pp()
-	return method_draw(spr, srt, pp)
+	if spr.program_param then
+		return method_draw(spr, srt, spr.program_param.gen_pp())
+	else
+		return method_draw(spr, srt)
+	end
 end
 
 method.fetch = fetch
