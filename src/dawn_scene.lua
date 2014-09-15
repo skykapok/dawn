@@ -50,13 +50,15 @@ function M:init()
 	self.v_sea:ps(sw*0.5, sh*(1+SKY_PCT)*0.5)
 	self.v_sea:sr(sw/SEA_TEX_W, sh*(1-SKY_PCT)/SEA_TEX_H)
 
-	-- objects
+	-- sun
 	self.v_sun = ej.sprite("dawn", "sun")
-	self.v_moon = ej.sprite("dawn", "moon")
+	self.v_sun_glow = ej.sprite("dawn", "glow")
+	self.v_sun_glow.program = "glow"
 
-	-- glow
-	self.v_glow = ej.sprite("dawn", "glow")
-	self.v_glow.program = "glow"
+	-- moon
+	self.v_moon = ej.sprite("dawn", "moon")
+	self.v_moon_glow = ej.sprite("dawn", "glow")
+	self.v_moon_glow.program = "glow"
 
 	-- init day
 	self.v_time = 16
@@ -71,7 +73,7 @@ end
 
 function M:draw()
 	-- time
-	self.v_time = self.v_time + 0.1
+	self.v_time = self.v_time + 0.02
 	if self.v_time > 24 then
 		self.v_time = self.v_time - 24
 	end
@@ -94,31 +96,31 @@ function M:draw()
 
 	-- objects
 	local ptw = math.pi / 12
+	local rx = sw * 0.45
+	local ry = sh * 0.45
 	local x, y, s, c, gs, gc
 
-	if self.v_time > 5 and self.v_time < 19 then
-		x = sw * (0.5 + math.cos((self.v_time-6)*ptw)*0.4)
-		y = sh * SKY_PCT * (0.9 - math.sin((self.v_time-6)*ptw)*0.8)
-		s = _mix1(s1.obj_scale, s2.obj_scale, m)
-		c = _mixc(s1.sun_color, s2.sun_color, m)
-		gs = _mix1(s1.glow_scale, s2.glow_scale, m)
-		gc = _mixc(s1.glow_addi, s2.glow_addi, m)
-		self.v_sun:ps(x, y, s)
-		self.v_sun.color = c
-		self.v_glow:ps(x, y, gs)
-		self.v_glow.color = gc
-	elseif self.v_time < 4 or self.v_time > 20 then
-		x = sw * (0.5 + math.cos((self.v_time-18)*ptw)*0.4)
-		y = sh * SKY_PCT * (1.5 - math.sin((self.v_time-18)*ptw)*0.9)
-		s = _mix1(s1.obj_scale, s2.obj_scale, m)
-		c = _mixc(s1.moon_color, s2.moon_color, m)
-		gs = _mix1(s1.glow_scale, s2.glow_scale, m)
-		gc = _mixc(s1.glow_addi, s2.glow_addi, m)
-		self.v_moon:ps(x, y, s)
-		self.v_moon.color = c
-		self.v_glow:ps(x, y, gs)
-		self.v_glow.color = gc
-	end
+	x = sw*0.5 + math.cos((self.v_time-6)*ptw)*rx
+	y = sh*SKY_PCT*1.1 - math.sin((self.v_time-6)*ptw)*ry
+	s = _mix1(s1.sun_scale, s2.sun_scale, m)
+	c = _mixc(s1.sun_color, s2.sun_color, m)
+	gs = _mix1(s1.sun_glow_scale, s2.sun_glow_scale, m)
+	gc = _mixc(s1.sun_glow_color, s2.sun_glow_color, m)
+	self.v_sun:ps(x, y, s)
+	self.v_sun.color = c
+	self.v_sun_glow:ps(x, y, gs)
+	self.v_sun_glow.color = gc
+
+	x = sw*0.5 + math.cos((self.v_time-18)*ptw)*rx
+	y = sh*SKY_PCT*1.1 - math.sin((self.v_time-18)*ptw)*ry
+	s = _mix1(s1.moon_scale, s2.moon_scale, m)
+	c = _mixc(s1.moon_color, s2.moon_color, m)
+	gs = _mix1(s1.moon_glow_scale, s2.moon_glow_scale, m)
+	gc = _mixc(s1.moon_glow_color, s2.moon_glow_color, m)
+	self.v_moon:ps(x, y, s)
+	self.v_moon.color = c
+	self.v_moon_glow:ps(x, y, gs)
+	self.v_moon_glow.color = gc
 
 	-- update shader param
 	local d = 0.05
@@ -132,13 +134,10 @@ function M:draw()
 
 	-- draw
 	self.v_sky:draw()
-	if self.v_time > 5 and self.v_time < 19 then
-		self.v_glow:draw()
-		self.v_sun:draw()
-	elseif self.v_time < 4 or self.v_time > 20 then
-		self.v_glow:draw()
-		self.v_moon:draw()
-	end
+	self.v_sun_glow:draw()
+	self.v_sun:draw()
+	self.v_moon_glow:draw()
+	self.v_moon:draw()
 	self.v_sea:draw()
 end
 
