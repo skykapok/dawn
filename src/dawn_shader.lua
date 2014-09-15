@@ -57,11 +57,26 @@ void main(void)
 }
 ]]
 
+local glow_fs = [[
+uniform sampler2D texture0;
+
+varying vec2 v_texcoord;
+varying vec4 v_color;
+
+void main() {
+	vec4 tmp = texture2D(texture0, v_texcoord);
+	gl_FragColor.xyz = clamp(tmp.xyz/tmp.w + v_color.xyz, 0.0, 1.0);
+	gl_FragColor.w = 1.0;
+	gl_FragColor *= tmp.w;
+}
+]]
+
 local M = {}
 
 function M.init()
 	shader.load("sky", sky_fs, vs, {far="4f", near="4f"})
 	shader.load("sea", sea_fs, vs, {t="1f", far="4f", near="4f", spec="4f"})
+	shader.load("glow", glow_fs, vs)
 end
 
 return M

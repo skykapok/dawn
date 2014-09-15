@@ -1,4 +1,5 @@
 local ej = require "ejoy2d"
+local CONFIG = require "dawn_config"
 
 local sw = 768
 local sh = 1024
@@ -12,69 +13,7 @@ local SKY_TEX_H = 1
 local SEA_TEX_W = 64
 local SEA_TEX_H = 64
 
-local NIGHT = {
-	sky_far		= { 0.00, 0.00, 0.00, 1.00 },
-	sky_near	= { 0.10, 0.10, 0.08, 1.00 },
-	sea_far		= { 0.02, 0.02, 0.02, 1.00 },
-	sea_near	= { 0.08, 0.08, 0.08, 1.00 },
-	sea_spec	= { 0.15, 0.15, 0.15, 1.00 },
-	sun_scale	= 1,
-	sun_color	= { 0.00, 0.00, 0.00, 0.00 },
-	glow_scale	= 1,
-	glow_addi	= { 0.00, 0.00, 0.00, 0.00 },
-}
-
-local DAWN = {
-	sky_far		= { 0.16, 0.52, 0.80, 1.00 },
-	sky_near	= { 1.00, 0.80, 0.30, 1.00 },
-	sea_far		= { 0.99, 0.85, 0.58, 1.00 },
-	sea_near	= { 0.53, 0.43, 0.32, 1.00 },
-	sea_spec	= { 1.00, 1.00, 0.60, 1.00 },
-	sun_scale	= 1,
-	sun_color	= { 0.92, 0.88, 0.74, 1.00 },
-	glow_scale	= 3,
-	glow_addi	= { 0.20, 0.20, 0.20, 1.00 },
-}
-
-local DAY = {
-	sky_far		= { 0.17, 0.49, 0.71, 1.00 },
-	sky_near	= { 0.60, 0.78, 0.88, 1.00 },
-	sea_far		= { 0.70, 0.82, 0.91, 1.00 },
-	sea_near	= { 0.06, 0.38, 0.53, 1.00 },
-	sea_spec	= { 1.00, 1.00, 1.00, 1.00 },
-	sun_scale	= 0.7,
-	sun_color	= { 1.00, 1.00, 1.00, 1.00 },
-	glow_scale	= 6,
-	glow_addi	= { 1.00, 1.00, 1.00, 1.00 },
-}
-
-local SEQ = {
-	NIGHT,		-- 00:00
-	NIGHT,		-- 01:00
-	NIGHT,		-- 02:00
-	NIGHT,		-- 03:00
-	NIGHT,		-- 04:00
-	NIGHT,		-- 05:00
-	DAWN,		-- 06:00
-	DAY,		-- 07:00
-	DAY,		-- 08:00
-	DAY,		-- 09:00
-	DAY,		-- 10:00
-	DAY,		-- 11:00
-	DAY,		-- 12:00
-	DAY,		-- 13:00
-	DAY,		-- 14:00
-	DAY,		-- 15:00
-	DAY,		-- 16:00
-	DAY,		-- 17:00
-	DAWN,		-- 18:00
-	DAWN,		-- 19:00
-	NIGHT,		-- 20:00
-	NIGHT,		-- 21:00
-	NIGHT,		-- 22:00
-	NIGHT,		-- 23:00
-	NIGHT,		-- 24:00 eq SEQ[1]
-}
+local M = {}
 
 local function _mix1(c1, c2, f)
 	return c1*(1-f) + c2*f
@@ -98,9 +37,6 @@ local function _mixc(c1, c2, f)
 		math.floor(c[3]*255)
 end
 
-
-local M = {}
-
 function M:init()
 	-- sky
 	self.v_sky = ej.sprite("dawn", "blank")
@@ -117,10 +53,13 @@ function M:init()
 	-- objects
 	self.v_sun = ej.sprite("dawn", "sun")
 	self.v_moon = ej.sprite("dawn", "moon")
+
+	-- glow
 	self.v_glow = ej.sprite("dawn", "glow")
+	self.v_glow.program = "glow"
 
 	-- init day
-	self.v_time = 8
+	self.v_time = 16
 
 	self.v_t0x = 0  -- shader params
 	self.v_t01 = 0
@@ -132,7 +71,7 @@ end
 
 function M:draw()
 	-- time
-	self.v_time = self.v_time + 0.05
+	self.v_time = self.v_time + 0.1
 	if self.v_time > 24 then
 		self.v_time = self.v_time - 24
 	end
@@ -141,8 +80,8 @@ function M:draw()
 	local m = self.v_time - h
 	print(string.format("%02d:%02d", h, m*60))
 
-	local s1 = SEQ[h+1]
-	local s2 = SEQ[h+2]
+	local s1 = CONFIG[h+1]
+	local s2 = CONFIG[h+2]
 
 	-- sky
 	self.v_sky.program_param.far = _mix4(s1.sky_far, s2.sky_far, m)
@@ -155,26 +94,31 @@ function M:draw()
 
 	-- objects
 	local ptw = math.pi / 12
-	local x, y, s, c, gs, ga
+	local x, y, s, c, gs, gc
 
-	x = sw * (0.5 + math.cos((self.v_time-6)*ptw)*0.4)
-	y = sh * SKY_PCT * (1 - math.sin((self.v_time-6)*ptw)*0.8)
-	s = _mix1(s1.sun_scale, s2.sun_scale, m)
-	c = _mixc(s1.sun_color, s2.sun_color, m)
-	gs = _mix1(s1.glow_scale, s2.glow_scale, m)
-	ga = _mixc(s1.glow_addi, s2.glow_addi, m)
-
-	print(string.format("sun_color=0x%08x glow_additive=0x%08x", c, ga))
-
-	self.v_sun:ps(x, y, s)
-	self.v_sun.color = c
-	self.v_glow:ps(x, y, gs)
-	self.v_glow.additive = ga
-
-	-- self.v_moon:ps(
-	-- 	sw * (0.5 + math.cos((self.v_time-18)*ptw)*0.4),
-	-- 	sh * SKY_PCT * (1.2 - math.sin((self.v_time-18)*ptw)*0.8),
-	-- 	1 - 0.3 * math.sin((self.v_time-18)*ptw))
+	if self.v_time > 5 and self.v_time < 19 then
+		x = sw * (0.5 + math.cos((self.v_time-6)*ptw)*0.4)
+		y = sh * SKY_PCT * (0.9 - math.sin((self.v_time-6)*ptw)*0.8)
+		s = _mix1(s1.obj_scale, s2.obj_scale, m)
+		c = _mixc(s1.sun_color, s2.sun_color, m)
+		gs = _mix1(s1.glow_scale, s2.glow_scale, m)
+		gc = _mixc(s1.glow_addi, s2.glow_addi, m)
+		self.v_sun:ps(x, y, s)
+		self.v_sun.color = c
+		self.v_glow:ps(x, y, gs)
+		self.v_glow.color = gc
+	elseif self.v_time < 4 or self.v_time > 20 then
+		x = sw * (0.5 + math.cos((self.v_time-18)*ptw)*0.4)
+		y = sh * SKY_PCT * (1.5 - math.sin((self.v_time-18)*ptw)*0.9)
+		s = _mix1(s1.obj_scale, s2.obj_scale, m)
+		c = _mixc(s1.moon_color, s2.moon_color, m)
+		gs = _mix1(s1.glow_scale, s2.glow_scale, m)
+		gc = _mixc(s1.glow_addi, s2.glow_addi, m)
+		self.v_moon:ps(x, y, s)
+		self.v_moon.color = c
+		self.v_glow:ps(x, y, gs)
+		self.v_glow.color = gc
+	end
 
 	-- update shader param
 	local d = 0.05
@@ -188,9 +132,13 @@ function M:draw()
 
 	-- draw
 	self.v_sky:draw()
-	self.v_glow:draw()
-	self.v_sun:draw()
-	-- self.v_moon:draw()
+	if self.v_time > 5 and self.v_time < 19 then
+		self.v_glow:draw()
+		self.v_sun:draw()
+	elseif self.v_time < 4 or self.v_time > 20 then
+		self.v_glow:draw()
+		self.v_moon:draw()
+	end
 	self.v_sea:draw()
 end
 
