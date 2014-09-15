@@ -60,6 +60,10 @@ function M:init()
 	self.v_moon_glow = ej.sprite("dawn", "glow")
 	self.v_moon_glow.program = "glow"
 
+	-- hud
+	self.v_label = ej.sprite("dawn", "default_label")
+	self.v_label:ps(10, 10)
+
 	-- init day
 	self.v_time = 16
 	self.v_speed = 0.02
@@ -83,8 +87,8 @@ function M:shift_speed(d)
 	if self.v_speed < 0 then
 		self.v_speed = 0
 	end
-	if self.v_speed > 0.5 then
-		self.v_speed = 0.5
+	if self.v_speed > 0.2 then
+		self.v_speed = 0.2
 	end
 end
 
@@ -105,7 +109,8 @@ function M:draw()
 
 	local h = math.floor(self.v_time)
 	local m = self.v_time - h
-	print(string.format("%02d:%02d", h, m*60))
+
+	self.v_label.text = string.format("Time %02d:%02d\nSpeed %.2f", h, m*60, self.v_speed*30)
 
 	local s1 = CONFIG[h+1]
 	local s2 = CONFIG[h+2]
@@ -164,6 +169,7 @@ function M:draw()
 	self.v_moon_glow:draw()
 	self.v_moon:draw()
 	self.v_sea:draw()
+	self.v_label:draw()
 end
 
 return M
