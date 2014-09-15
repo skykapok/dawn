@@ -17,8 +17,10 @@ struct WINDOWGAME {
 static struct WINDOWGAME *G = NULL;
 
 static const char * startscript =
-"local path, script = ...\n"
-"require('ejoy2d.framework').WorkDir = path..'/'\n"
+"local path, script, sw, sh, ss = ...\n"
+"local fw = require('ejoy2d.framework')\n"
+"fw.WorkDir = path..'/'\n"
+"fw.ScreenWidth, fw.ScreenHeight, fw.ScreenScale = sw, sh, ss\n"
 "assert(script, 'I need a script name')\n"
 "script = path..'/'..script\n"
 "package.path = './?.lua;./?/init.lua;'\n"
@@ -62,8 +64,11 @@ ejoy2d_win_init(int orix, int oriy, int width, int height, float scale, const ch
 
 	lua_pushstring(L, folder);
 	lua_pushstring(L, "src/main.lua");
+	lua_pushnumber(L, width);
+	lua_pushnumber(L, height);
+	lua_pushnumber(L, scale);
 
-	err = lua_pcall(L, 2, 0, tb);
+	err = lua_pcall(L, 5, 0, tb);
 	if (err) {
 		const char *msg = lua_tostring(L,-1);
 		fault("%s", msg);

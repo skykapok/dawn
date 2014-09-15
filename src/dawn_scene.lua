@@ -1,12 +1,12 @@
 local ej = require "ejoy2d"
+local fw = require "ejoy2d.framework"
 local CONFIG = require "dawn_config"
 
-local sw = 768
-local sh = 1024
--- local sw = 320
--- local sh = 568
+local sw = fw.ScreenWidth
+local sh = fw.ScreenHeight
 
 local SKY_PCT = 0.6
+local OBJSCALE = sw / 768
 
 local SKY_TEX_W = 1
 local SKY_TEX_H = 1
@@ -41,8 +41,8 @@ function M:init()
 	-- sky
 	self.v_sky = ej.sprite("dawn", "blank")
 	self.v_sky.program = "sky"
-	self.v_sky:ps(sw*0.5, sh*SKY_PCT*0.5)
-	self.v_sky:sr(sw/SKY_TEX_W, sh*SKY_PCT/SKY_TEX_H)
+	self.v_sky:ps(sw*0.5, sh*SKY_PCT*0.5 + 1)
+	self.v_sky:sr(sw/SKY_TEX_W, sh*SKY_PCT/SKY_TEX_H + 2)
 
 	-- sea
 	self.v_sea = ej.sprite("dawn", "noise")
@@ -131,9 +131,9 @@ function M:draw()
 	c = _mixc(s1.sun_color, s2.sun_color, m)
 	gs = _mix1(s1.sun_glow_scale, s2.sun_glow_scale, m)
 	gc = _mixc(s1.sun_glow_color, s2.sun_glow_color, m)
-	self.v_sun:ps(x, y, s)
+	self.v_sun:ps(x, y, s*OBJSCALE)
 	self.v_sun.color = c
-	self.v_sun_glow:ps(x, y, gs)
+	self.v_sun_glow:ps(x, y, gs*OBJSCALE)
 	self.v_sun_glow.color = gc
 
 	x = sw*0.5 + math.cos((self.v_time-18)*ptw)*rx
@@ -142,9 +142,9 @@ function M:draw()
 	c = _mixc(s1.moon_color, s2.moon_color, m)
 	gs = _mix1(s1.moon_glow_scale, s2.moon_glow_scale, m)
 	gc = _mixc(s1.moon_glow_color, s2.moon_glow_color, m)
-	self.v_moon:ps(x, y, s)
+	self.v_moon:ps(x, y, s*OBJSCALE)
 	self.v_moon.color = c
-	self.v_moon_glow:ps(x, y, gs)
+	self.v_moon_glow:ps(x, y, gs*OBJSCALE)
 	self.v_moon_glow.color = gc
 
 	-- update shader param
