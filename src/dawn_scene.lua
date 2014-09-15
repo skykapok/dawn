@@ -119,6 +119,16 @@ function M:draw()
 	self.v_sea.program_param.near = _mix4(s1.sea_near, s2.sea_near, m)
 	self.v_sea.program_param.spec = _mix4(s1.sea_spec, s2.sea_spec, m)
 
+	local d = 0.05
+	self.v_t0x = self.v_t0x + d
+	self.v_t01 = self.v_t01 + d*self.v_t01_dir
+	if self.v_t01 > 1 or self.v_t01 < 0 then
+		self.v_t01_dir = -self.v_t01_dir
+	end
+
+	self.v_sea.program_param.t = self.v_t0x
+	self.v_sea.program_param.t1 = self.v_t01
+
 	-- objects
 	local ptw = math.pi / 12
 	local rx = sw * 0.45
@@ -146,16 +156,6 @@ function M:draw()
 	self.v_moon.color = c
 	self.v_moon_glow:ps(x, y, gs*OBJSCALE)
 	self.v_moon_glow.color = gc
-
-	-- update shader param
-	local d = 0.05
-	self.v_t0x = self.v_t0x + d
-	self.v_t01 = self.v_t01 + d*self.v_t01_dir
-	if self.v_t01 > 1 or self.v_t01 < 0 then
-		self.v_t01_dir = -self.v_t01_dir
-	end
-
-	self.v_sea.program_param.t = self.v_t0x
 
 	-- draw
 	self.v_sky:draw()

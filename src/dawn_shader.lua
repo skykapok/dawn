@@ -32,6 +32,7 @@ void main() {
 local sea_fs = [[
 uniform sampler2D Texture0;
 uniform float t;
+uniform float t1;
 uniform vec4 far;
 uniform vec4 near;
 uniform vec4 spec;
@@ -48,7 +49,7 @@ void main(void)
 	vec2 nc = fract(tc*tex_scale + t*noise_speed);
 
 	vec4 noise = texture2D(Texture0, nc);
-	float n = mix(noise.x, noise.y, (sin(t) + 1.0) * 0.5);
+	float n = mix(noise.x, noise.y, t1);
 	float w = (sin(tc.y*80.0 + n - t) + 1.0) * 0.5;
 
 	vec4 base1 = near * (1.0 + n*0.1);
@@ -75,7 +76,7 @@ local M = {}
 
 function M.init()
 	shader.load("sky", sky_fs, vs, {far="4f", near="4f"})
-	shader.load("sea", sea_fs, vs, {t="1f", far="4f", near="4f", spec="4f"})
+	shader.load("sea", sea_fs, vs, {t="1f", t1="1f", far="4f", near="4f", spec="4f"})
 	shader.load("glow", glow_fs, vs)
 end
 
