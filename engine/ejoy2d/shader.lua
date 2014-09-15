@@ -188,6 +188,7 @@ function shader.load(name, fs, vs, param_desc)
 	shader_name[name] = custom_id
 
 	local desc = {}
+	param_desc = param_desc or {}
 	for k,v in pairs(param_desc) do
 		desc[k] = s.config(custom_id, k, v)
 	end
