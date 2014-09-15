@@ -62,10 +62,30 @@ function M:init()
 
 	-- init day
 	self.v_time = 16
+	self.v_speed = 0.02
+	self.v_pause = false
 
 	self.v_t0x = 0  -- shader params
 	self.v_t01 = 0
 	self.v_t01_dir = 1
+end
+
+function M:pause_time(p)
+	self.v_pause = p
+end
+
+function M:shift_time(d)
+	self.v_time = self.v_time - d*0.01
+end
+
+function M:shift_speed(d)
+	self.v_speed = self.v_speed - d*0.001
+	if self.v_speed < 0 then
+		self.v_speed = 0
+	end
+	if self.v_speed > 0.5 then
+		self.v_speed = 0.5
+	end
 end
 
 function M:update()
@@ -73,8 +93,13 @@ end
 
 function M:draw()
 	-- time
-	self.v_time = self.v_time + 0.02
-	if self.v_time > 24 then
+	if not self.v_pause then
+		self.v_time = self.v_time + self.v_speed
+	end
+	while self.v_time < 0 do
+		self.v_time = self.v_time + 24
+	end
+	while self.v_time > 24 do
 		self.v_time = self.v_time - 24
 	end
 

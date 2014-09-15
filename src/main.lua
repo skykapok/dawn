@@ -30,7 +30,24 @@ function game.drawframe()
 	scene:draw()
 end
 
+local last_x, last_y
 function game.touch(what, x, y)
+	if what == "BEGIN" then
+		scene:pause_time(true)
+	elseif what == "END" then
+		scene:pause_time(false)
+	elseif what == "MOVE" then
+		local dx = x - last_x
+		local dy = y - last_y
+		if math.abs(dx) > math.abs(dy) then
+			scene:shift_time(dx)
+		else
+			scene:shift_speed(dy)
+		end
+	end
+
+	last_x = x
+	last_y = y
 end
 
 function game.message(...)
