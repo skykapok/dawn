@@ -9,6 +9,21 @@ return {
 }
 ]]
 
+local TEMPLATE_LABEL = [[
+{
+	type = "label",
+	id = %d,
+	export = "default_label",
+	width = 200,
+	height = 100,
+	font = "",
+	align = 0,
+	size = 16,
+	color = 0xffffffff,
+	noedge = true,
+},
+]]
+
 local TEMPLATE_PICTURE = [[
 {
 	type = "picture",
@@ -73,7 +88,7 @@ function pkg_mt:save(path)
 	end
 
 	-- save description file
-	local body = ""
+	local body = string.format(TEMPLATE_LABEL, self:_next_id())
 	for k,v in pairs(self.items) do
 		if v.type == "picture" then
 			body = body..self:_serialize_picture(v.id, k, v.data)
