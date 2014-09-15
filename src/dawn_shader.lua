@@ -42,7 +42,7 @@ varying vec4 v_color;
 void main(void)
 {
 	vec2 tex_scale = vec2(0.5, 15.0);
-	vec2 noise_speed = vec2(0.005, -0.08);
+	vec2 noise_speed = vec2(0.0, -0.08);
 
 	vec2 tc = vec2(v_texcoord.x, pow(v_texcoord.y, 0.1));
 	vec2 nc = fract(tc*tex_scale + t*noise_speed);
@@ -52,7 +52,7 @@ void main(void)
 	float w = (sin(tc.y*80.0 + n - t) + 1.0) * 0.5;
 
 	vec4 base1 = near * (1.0 + n*0.1);
-	vec4 base2 = mix(spec, base1, pow(w - n*0.1, 0.15));
+	vec4 base2 = mix(spec, base1, pow(abs(w - n*0.1), 0.15));
 	gl_FragColor = mix(far, base2, pow(tc.y, 3.0));
 }
 ]]
