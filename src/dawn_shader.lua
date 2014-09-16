@@ -24,7 +24,7 @@ varying vec2 v_texcoord;
 varying vec4 v_color;
 
 void main() {
-	float f = pow(v_texcoord.y, 0.3);
+	float f = pow(v_texcoord.y, 0.5);
 	gl_FragColor = mix(far, near, f);
 }
 ]]

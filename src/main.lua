@@ -7,6 +7,8 @@ local scene = require "dawn_scene"
 
 -- init
 local function init()
+	math.randomseed(os.time())
+
 	pack.load {
 		pattern = fw.WorkDir.."package/?",
 		"dawn",
@@ -37,13 +39,7 @@ function game.touch(what, x, y)
 	elseif what == "END" then
 		scene:pause_time(false)
 	elseif what == "MOVE" then
-		local dx = x - last_x
-		local dy = y - last_y
-		if math.abs(dx) > math.abs(dy) then
-			scene:shift_time(dx)
-		else
-			scene:shift_speed(dy)
-		end
+		scene:shift_time(x - last_x)
 	end
 
 	last_x = x
