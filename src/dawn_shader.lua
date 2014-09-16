@@ -33,9 +33,11 @@ local sea_fs = [[
 uniform sampler2D Texture0;
 uniform float t;
 uniform float t1;
+uniform float sx;
 uniform vec4 far;
 uniform vec4 near;
 uniform vec4 spec;
+uniform vec4 refl;
 
 varying vec2 v_texcoord;
 varying vec4 v_color;
@@ -50,11 +52,16 @@ void main(void)
 
 	vec4 noise = texture2D(Texture0, nc);
 	float n = mix(noise.x, noise.y, t1);
-	float w = (sin(tc.y*80.0 + n - t) + 1.0) * 0.5;
 
-	vec4 base1 = near * (1.0 + n*0.1);
-	vec4 base2 = mix(spec, base1, pow(abs(w - n*0.1), 0.15));
-	gl_FragColor = mix(far, base2, pow(tc.y, 3.0));
+	float w = (sin(tc.y*80.0 + n - t) + 1.0) * 0.5;
+	w = abs(w - n*0.1);
+
+	float x = clamp(n-pow(tc.x-sx, 2.0)*60.0, 0.0, 1.0);
+
+	vec4 base = near * (1.0 + n*0.1);
+	base.xyz += spec.xyz * (1.0 - pow(w, 0.15));
+	base.xyz += refl.xyz * (1.0 - pow(w, x));
+	gl_FragColor = mix(far, base, pow(tc.y, 3.0));
 }
 ]]
 
@@ -76,7 +83,12 @@ local M = {}
 
 function M.init()
 	shader.load("sky", sky_fs, vs, {far="4f", near="4f"})
-	shader.load("sea", sea_fs, vs, {t="1f", t1="1f", far="4f", near="4f", spec="4f"})
+	shader.load("sea", sea_fs, vs,
+		{
+			t="1f", t1="1f",
+			sx="1f",
+			far="4f", near="4f", spec="4f", refl="4f"
+		})
 	shader.load("glow", glow_fs, vs)
 end
 

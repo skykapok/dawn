@@ -11,6 +11,7 @@ local OBJSCALE = sw / 768
 
 local SIM_SPEED = 0.02
 local WAVE_SPEED = 0.05
+local SHIFT_SPEED = 0.01
 
 local SKY_TEX_W = 1
 local SKY_TEX_H = 1
@@ -101,7 +102,7 @@ function M:pause_time(p)
 end
 
 function M:shift_time(d)
-	self.v_time = self.v_time - d*0.01
+	self.v_time = self.v_time - d * SHIFT_SPEED
 end
 
 function M:update()
@@ -193,10 +194,11 @@ function M:draw()
 
 	self.v_sea.program_param.t = self.v_t0x
 	self.v_sea.program_param.t1 = self.v_t01
-
+	self.v_sea.program_param.sx = x / sw
 	self.v_sea.program_param.far = _mix4(s1.sea_far, s2.sea_far, m)
 	self.v_sea.program_param.near = _mix4(s1.sea_near, s2.sea_near, m)
 	self.v_sea.program_param.spec = _mix4(s1.sea_spec, s2.sea_spec, m)
+	self.v_sea.program_param.refl = _mix4(s1.sea_refl, s2.sea_refl, m)
 	self.v_sea:draw()
 
 	-- hud
