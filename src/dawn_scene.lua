@@ -89,7 +89,7 @@ function M:init()
 	self.v_label:ps(10, 10)
 
 	-- init day
-	self.v_time = 16
+	self.v_time = 8
 	self.v_pause = false
 
 	self.v_t0x = 0  -- shader params
@@ -153,7 +153,7 @@ function M:draw()
 	-- sun & moon
 	local rx = sw * 0.45
 	local ry = sh * 0.45
-	local x, y, s, c, gs, gc
+	local x, y, s, c, gs, gc, rc
 
 	if self.v_time > 5 and self.v_time < 19 then
 		x = sw*0.5 + math.cos((self.v_time-6)*ptw)*rx
@@ -162,6 +162,7 @@ function M:draw()
 		c = _mixc(s1.sun_color, s2.sun_color, m)
 		gs = _mix1(s1.sun_glow_scale, s2.sun_glow_scale, m)
 		gc = _mixc(s1.sun_glow_color, s2.sun_glow_color, m)
+		rc = _mix4(s1.sun_refl_color, s2.sun_refl_color, m)
 		self.v_sun_glow:ps(x, y, gs*OBJSCALE)
 		self.v_sun_glow.color = gc
 		self.v_sun_glow:draw()
@@ -177,6 +178,7 @@ function M:draw()
 		c = _mixc(s1.moon_color, s2.moon_color, m)
 		gs = _mix1(s1.moon_glow_scale, s2.moon_glow_scale, m)
 		gc = _mixc(s1.moon_glow_color, s2.moon_glow_color, m)
+		rc = _mix4(s1.moon_refl_color, s2.moon_refl_color, m)
 		self.v_moon_glow:ps(x, y, gs*OBJSCALE)
 		self.v_moon_glow.color = gc
 		self.v_moon_glow:draw()
@@ -198,7 +200,7 @@ function M:draw()
 	self.v_sea.program_param.far = _mix4(s1.sea_far, s2.sea_far, m)
 	self.v_sea.program_param.near = _mix4(s1.sea_near, s2.sea_near, m)
 	self.v_sea.program_param.spec = _mix4(s1.sea_spec, s2.sea_spec, m)
-	self.v_sea.program_param.refl = _mix4(s1.sea_refl, s2.sea_refl, m)
+	self.v_sea.program_param.refl = rc
 	self.v_sea:draw()
 
 	-- hud
