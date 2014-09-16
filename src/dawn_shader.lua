@@ -56,7 +56,8 @@ void main(void)
 	float w = (sin(tc.y*80.0 + n - t) + 1.0) * 0.5;
 	w = abs(w - n*0.1);
 
-	float x = clamp(n-pow(tc.x-sx, 2.0)*60.0, 0.0, 1.0);
+	float x = n - pow(abs(tc.x-sx), 2.0) * 60.0;
+	x = clamp(x, 0.0, 1.0);
 
 	vec4 base = near * (1.0 + n*0.1);
 	base.xyz += spec.xyz * (1.0 - pow(w, 0.15));
