@@ -31,7 +31,7 @@ void main() {
 
 local sea_fs = [[
 uniform sampler2D Texture0;
-uniform float t;
+uniform highp float t;
 uniform float t1;
 uniform float sx;
 uniform vec4 far;
