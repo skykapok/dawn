@@ -46,7 +46,12 @@ function game.touch(what, x, y)
 	last_y = y
 end
 
-function game.message(...)
+function game.message(id, state, data, n)
+	if data == "LEFT" or data == "RIGHT" then
+		scene:layout(true)
+	else
+		scene:layout(false)
+	end
 end
 
 function game.handle_error(...)

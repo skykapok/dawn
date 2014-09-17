@@ -7,7 +7,7 @@ local sh = fw.ScreenHeight
 
 local SKY_PCT = 0.6
 local STAR_PCT = SKY_PCT * 0.9
-local OBJSCALE = sw / 768
+local OBJSCALE = fw.ScreenWidth / 768
 
 local SIM_SPEED = 0.02
 local WAVE_SPEED = 0.05
@@ -50,14 +50,10 @@ function M:init()
 	-- sky
 	self.v_sky = ej.sprite("dawn", "blank")
 	self.v_sky.program = "sky"
-	self.v_sky:ps(sw*0.5, sh*SKY_PCT*0.5 + 1)
-	self.v_sky:sr(sw/SKY_TEX_W, sh*SKY_PCT/SKY_TEX_H + 2)
 
 	-- sea
 	self.v_sea = ej.sprite("dawn", "noise")
 	self.v_sea.program = "sea"
-	self.v_sea:ps(sw*0.5, sh*(1+SKY_PCT)*0.5)
-	self.v_sea:sr(sw/SEA_TEX_W, sh*(1-SKY_PCT)/SEA_TEX_H)
 
 	-- sun
 	self.v_sun = ej.sprite("dawn", "sun")
@@ -72,21 +68,16 @@ function M:init()
 	-- star
 	self.v_stars = {}
 	self.v_star_a = {}
-	local star_h = math.floor(sh * STAR_PCT)
 	for i=1,100 do
-		local x = math.random(0, sw)
-		local y = math.random(0, star_h)
-		local s = math.random()*0.6 + 0.1
-		local a = 1 - y / star_h
 		local star = ej.sprite("dawn", "star")
-		star:ps(x, y, s)
 		table.insert(self.v_stars, star)
-		table.insert(self.v_star_a, a)
 	end
 
 	-- hud
 	self.v_label = ej.sprite("dawn", "default_label")
-	self.v_label:ps(10, 10)
+
+	-- layout
+	self:layout()
 
 	-- init day
 	self.v_time = 8
@@ -97,6 +88,13 @@ function M:init()
 	self.v_t01_dir = 1
 end
 
+function M:update()
+end
+
+function M:draw()
+	self:sim()
+end
+
 function M:pause_time(p)
 	self.v_pause = p
 end
@@ -105,10 +103,35 @@ function M:shift_time(d)
 	self.v_time = self.v_time - d * SHIFT_SPEED
 end
 
-function M:update()
+function M:layout(horz)
+	if horz then
+		sw = fw.ScreenHeight
+		sh = fw.ScreenWidth
+	else
+		sw = fw.ScreenWidth
+		sh = fw.ScreenHeight
+	end
+
+	self.v_sky:ps(sw*0.5, sh*SKY_PCT*0.5 + 1)
+	self.v_sky:sr(sw/SKY_TEX_W, sh*SKY_PCT/SKY_TEX_H + 2)
+
+	self.v_sea:ps(sw*0.5, sh*(1+SKY_PCT)*0.5)
+	self.v_sea:sr(sw/SEA_TEX_W, sh*(1-SKY_PCT)/SEA_TEX_H)
+
+	local star_h = math.floor(sh * STAR_PCT)
+	for i=1,100 do
+		local x = math.random(0, sw)
+		local y = math.random(0, star_h)
+		local s = math.random()*0.6 + 0.1
+		local a = 1 - y / star_h
+		self.v_stars[i]:ps(x, y, s)
+		self.v_star_a[i] = a
+	end
+
+	self.v_label:ps(10, 10)
 end
 
-function M:draw()
+function M:sim()
 	local ptw = math.pi / 12
 
 	-- time

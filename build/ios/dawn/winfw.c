@@ -81,8 +81,8 @@ ejoy2d_win_init(int orix, int oriy, int width, int height, float scale, const ch
 }
 
 void
-ejoy2d_win_update() {
-	ejoy2d_game_update(G->game, 0.01f);
+ejoy2d_win_update(float dt) {
+	ejoy2d_game_update(G->game, dt);
 }
 
 void
@@ -113,4 +113,30 @@ ejoy2d_win_touch(int x, int y,int touch) {
 	// windows only support one touch id (0)
 	int id = 0;
 	ejoy2d_game_touch(G->game, id, x,y,touch);
+}
+
+void
+ejoy2d_win_rotate(int width, int height, float scale, int orient) {
+    screen_init(width, height, scale);
+
+    switch (orient) {
+        case ORIENT_UP:
+            ejoy2d_game_message(G->game, 0, NULL, "UP", 0);
+            break;
+
+        case ORIENT_DOWN:
+            ejoy2d_game_message(G->game, 0, NULL, "DOWN", 0);
+            break;
+
+        case ORIENT_LEFT:
+            ejoy2d_game_message(G->game, 0, NULL, "LEFT", 0);
+            break;
+
+        case ORIENT_RIGHT:
+            ejoy2d_game_message(G->game, 0, NULL, "RIGHT", 0);
+            break;
+
+        default:
+            break;
+    }
 }

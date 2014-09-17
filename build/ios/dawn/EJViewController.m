@@ -17,17 +17,34 @@ static EJViewController* _controller = nil;
 	return _controller;
 }
 
--(void)loadView {
-	CGRect bounds = [UIScreen mainScreen].bounds;
-	self.view = [[GLKView alloc] initWithFrame:bounds];
-}
-
 +(EJViewController*)getLastInstance {
 	return _controller;
 }
 
--(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return interfaceOrientation == UIInterfaceOrientationLandscapeLeft || interfaceOrientation == UIInterfaceOrientationLandscapeRight;
+-(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientatio {
+    [super didRotateFromInterfaceOrientation:fromInterfaceOrientatio];
+
+    float s = [[UIScreen mainScreen] scale];
+    float w = self.view.bounds.size.width;
+    float h = self.view.bounds.size.height;
+
+    switch (self.interfaceOrientation) {
+        case UIInterfaceOrientationPortrait:
+            ejoy2d_win_rotate(w, h, s, ORIENT_UP);
+            break;
+
+        case UIInterfaceOrientationPortraitUpsideDown:
+            ejoy2d_win_rotate(w, h, s, ORIENT_DOWN);
+            break;
+
+        case UIInterfaceOrientationLandscapeLeft:
+            ejoy2d_win_rotate(w, h, s, ORIENT_LEFT);
+            break;
+
+        case UIInterfaceOrientationLandscapeRight:
+            ejoy2d_win_rotate(w, h, s, ORIENT_RIGHT);
+            break;
+    }
 }
 
 -(void)dealloc {
@@ -87,7 +104,7 @@ static EJViewController* _controller = nil;
 }
 
 -(void)update {
-	ejoy2d_win_update();
+	ejoy2d_win_update(self.timeSinceLastUpdate);
 }
 
 -(void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
