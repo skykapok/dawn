@@ -95,7 +95,7 @@ local SUNSET = {
 
 	sun_scale		= 1,
 	sun_color		= { 0.92, 0.88, 0.74, 1.00 },
-	sun_glow_scale	= 4.5,
+	sun_glow_scale	= 3.5,
 	sun_glow_color	= { 0.50, 0.50, 0.50, 1.00 },
 	sun_refl_color	= { 1.00, 1.00, 0.80, 1.00 },
 }
@@ -110,7 +110,7 @@ local EVENING = {
 
 	sun_scale		= 1.1,
 	sun_color		= { 0.92, 0.88, 0.74, 1.00 },
-	sun_glow_scale	= 3,
+	sun_glow_scale	= 1.5,
 	sun_glow_color	= { 0.50, 0.50, 0.50, 1.00 },
 	sun_refl_color	= { 0.00, 0.00, 0.00, 1.00 },
 
@@ -131,7 +131,7 @@ local DUSK = {
 
 	sun_scale		= 1.1,
 	sun_color		= { 0.92, 0.88, 0.74, 1.00 },
-	sun_glow_scale	= 3,
+	sun_glow_scale	= 0.5,
 	sun_glow_color	= { 0.50, 0.50, 0.50, 1.00 },
 	sun_refl_color	= { 0.00, 0.00, 0.00, 1.00 },
 

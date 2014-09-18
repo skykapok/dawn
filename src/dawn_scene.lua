@@ -7,7 +7,8 @@ local sh = fw.ScreenHeight
 
 local SKY_PCT = 0.6
 local STAR_PCT = SKY_PCT * 0.9
-local OBJSCALE = fw.ScreenWidth / 768
+local OBJ_ORB = 0.45
+local OBJ_SCALE = fw.ScreenWidth / 768
 
 local SIM_SPEED = 0.02
 local WAVE_SPEED = 0.05
@@ -21,6 +22,7 @@ local SEA_TEX_H = 64
 local SL8 = math.pow(2, 8)
 local SL16 = math.pow(2, 16)
 local SL24 = math.pow(2, 24)
+local PIOVER12 = math.pi / 12
 
 local M = {}
 
@@ -47,6 +49,26 @@ local function _mixc(c1, c2, f)
 end
 
 function M:init()
+	self:init_sim()
+	self:layout_sim(false)
+end
+
+function M:update()
+end
+
+function M:draw()
+	self:update_sim()
+end
+
+function M:pause_time(p)
+	self.v_pause = p
+end
+
+function M:shift_time(d)
+	self.v_time = self.v_time - d * SHIFT_SPEED
+end
+
+function M:init_sim()
 	-- sky
 	self.v_sky = ej.sprite("dawn", "blank")
 	self.v_sky.program = "sky"
@@ -76,9 +98,6 @@ function M:init()
 	-- hud
 	self.v_label = ej.sprite("dawn", "default_label")
 
-	-- layout
-	self:layout()
-
 	-- init day
 	self.v_time = 8
 	self.v_pause = false
@@ -88,22 +107,7 @@ function M:init()
 	self.v_t01_dir = 1
 end
 
-function M:update()
-end
-
-function M:draw()
-	self:sim()
-end
-
-function M:pause_time(p)
-	self.v_pause = p
-end
-
-function M:shift_time(d)
-	self.v_time = self.v_time - d * SHIFT_SPEED
-end
-
-function M:layout(horz)
+function M:layout_sim(horz)
 	if horz then
 		sw = fw.ScreenHeight
 		sh = fw.ScreenWidth
@@ -131,9 +135,7 @@ function M:layout(horz)
 	self.v_label:ps(10, 10)
 end
 
-function M:sim()
-	local ptw = math.pi / 12
-
+function M:update_sim()
 	-- time
 	if not self.v_pause then
 		self.v_time = self.v_time + SIM_SPEED
@@ -160,52 +162,56 @@ function M:sim()
 
 	-- star
 	if self.v_time > 18 or self.v_time < 6 then
+		local fa = 1
+		if self.v_time > 18 then
+			fa = math.sin((self.v_time - 18) * PIOVER12)
+		else
+			fa = math.sin((self.v_time + 6) * PIOVER12)
+		end
+
 		for i=1,100 do
 			local a = self.v_star_a[i]
-			a = a * (math.random()*0.4 + 0.6)
-			if self.v_time > 18 then
-				a = a * math.sin((self.v_time - 18) * ptw)
-			else
-				a = a * math.sin((self.v_time + 6) * ptw)
-			end
+			a = a * (math.random()*0.4 + 0.6) * fa
 			self.v_stars[i].color = 0xffffff + math.floor(a*255) * SL24
 			self.v_stars[i]:draw()
 		end
 	end
 
 	-- sun & moon
-	local rx = sw * 0.45
-	local ry = sh * 0.45
+	local rx = sw * OBJ_ORB
+	local ry = sh * OBJ_ORB
 	local x, y, s, c, gs, gc, rc
 
 	if self.v_time > 5 and self.v_time < 19 then
-		x = sw*0.5 + math.cos((self.v_time-6)*ptw)*rx
-		y = sh*SKY_PCT*1.1 - math.sin((self.v_time-6)*ptw)*ry
+		x = sw*0.5 + math.cos((self.v_time-6)*PIOVER12)*rx
+		y = sh*SKY_PCT*1.1 - math.sin((self.v_time-6)*PIOVER12)*ry
 		s = _mix1(s1.sun_scale, s2.sun_scale, m)
 		c = _mixc(s1.sun_color, s2.sun_color, m)
 		gs = _mix1(s1.sun_glow_scale, s2.sun_glow_scale, m)
 		gc = _mixc(s1.sun_glow_color, s2.sun_glow_color, m)
 		rc = _mix4(s1.sun_refl_color, s2.sun_refl_color, m)
-		self.v_sun_glow:ps(x, y, gs*OBJSCALE)
+
+		self.v_sun_glow:ps(x, y, gs*OBJ_SCALE)
 		self.v_sun_glow.color = gc
 		self.v_sun_glow:draw()
-		self.v_sun:ps(x, y, s*OBJSCALE)
+		self.v_sun:ps(x, y, s*OBJ_SCALE)
 		self.v_sun.color = c
 		self.v_sun:draw()
 	end
 
 	if self.v_time > 18 or self.v_time < 6 then
-		x = sw*0.5 + math.cos((self.v_time-18)*ptw)*rx
-		y = sh*SKY_PCT*1.1 - math.sin((self.v_time-18)*ptw)*ry
+		x = sw*0.5 + math.cos((self.v_time-18)*PIOVER12)*rx
+		y = sh*SKY_PCT*1.1 - math.sin((self.v_time-18)*PIOVER12)*ry
 		s = _mix1(s1.moon_scale, s2.moon_scale, m)
 		c = _mixc(s1.moon_color, s2.moon_color, m)
 		gs = _mix1(s1.moon_glow_scale, s2.moon_glow_scale, m)
 		gc = _mixc(s1.moon_glow_color, s2.moon_glow_color, m)
 		rc = _mix4(s1.moon_refl_color, s2.moon_refl_color, m)
-		self.v_moon_glow:ps(x, y, gs*OBJSCALE)
+
+		self.v_moon_glow:ps(x, y, gs*OBJ_SCALE)
 		self.v_moon_glow.color = gc
 		self.v_moon_glow:draw()
-		self.v_moon:ps(x, y, s*OBJSCALE)
+		self.v_moon:ps(x, y, s*OBJ_SCALE)
 		self.v_moon.color = c
 		self.v_moon:draw()
 	end

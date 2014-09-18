@@ -32,7 +32,7 @@ function game.drawframe()
 	scene:draw()
 end
 
-local last_x, last_y
+local last_x
 function game.touch(what, x, y)
 	if what == "BEGIN" then
 		scene:pause_time(true)
@@ -43,14 +43,13 @@ function game.touch(what, x, y)
 	end
 
 	last_x = x
-	last_y = y
 end
 
 function game.message(id, state, data, n)
 	if data == "LEFT" or data == "RIGHT" then
-		scene:layout(true)
+		scene:layout_sim(true)
 	else
-		scene:layout(false)
+		scene:layout_sim(false)
 	end
 end
 
