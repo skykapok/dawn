@@ -4,4 +4,11 @@
 *.xcworkspace
 xcuserdata
 
+# android
+build/android/gen
+build/android/obj
+build/android/bin
+build/android/local.properties
+
+# generated resource
 res/package
