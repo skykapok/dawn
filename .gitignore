@@ -5,10 +5,11 @@
 xcuserdata
 
 # android
+build/android/local.properties
 build/android/gen
 build/android/obj
 build/android/bin
-build/android/local.properties
+build/android/objs
 
 # generated resource
 res/package
