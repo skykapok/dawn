@@ -3,7 +3,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := ejoy2d
 
-LOCAL_SRC_FILES := main.c
+LOCAL_SRC_FILES := main.c font.c
 
 LOCAL_SRC_FILES += \
                    ../../../engine/lib/dfont.c \
@@ -22,7 +22,8 @@ LOCAL_SRC_FILES += \
                    ../../../engine/lib/shader.c \
                    ../../../engine/lib/sprite.c \
                    ../../../engine/lib/spritepack.c \
-                   ../../../engine/lib/texture.c
+                   ../../../engine/lib/texture.c \
+                   ../../../engine/platform/winfw.c
 
 LOCAL_SRC_FILES += \
                    ../../../engine/lua/lapi.c \
@@ -60,8 +61,13 @@ LOCAL_SRC_FILES += \
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH) \
                     $(LOCAL_PATH)/../../../engine/lib \
-                    $(LOCAL_PATH)/../../../engine/lua \
+                    $(LOCAL_PATH)/../../../engine/platform \
+                    $(LOCAL_PATH)/../../../engine/lua
 
-LOCAL_LDLIBS := -llog -landroid -lGLESv2
+LOCAL_LDLIBS := -llog -landroid -lEGL -lGLESv2
+
+LOCAL_STATIC_LIBRARIES := android_native_app_glue
 
 include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,android/native_app_glue)

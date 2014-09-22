@@ -5,11 +5,13 @@
 xcuserdata
 
 # android
-build/android/local.properties
 build/android/gen
 build/android/obj
 build/android/bin
-build/android/objs
+build/android/libs
+build/android/assets
+build/android/local.properties
+build/android/.ant-targets-build.xml
 
 # generated resource
 res/package
