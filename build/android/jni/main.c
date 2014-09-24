@@ -14,6 +14,9 @@
 
 #define FRAME_TIME (1.0f/30)
 
+int font_module_init();
+void font_module_destroy();
+
 static char data_path[1024];
 static float t;
 
@@ -24,6 +27,8 @@ Java_com_android_gl2jni_GL2JNILib_init(JNIEnv *env, jobject obj, jstring path) {
 	strcpy(data_path, p);
 	(*env)->ReleaseStringUTFChars(env, path, p);
 	LOGI("APP_DATA_PATH %s", data_path);
+
+	font_module_init();
 }
 
 JNIEXPORT void JNICALL
