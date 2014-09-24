@@ -3,9 +3,6 @@ package com.android.gl2jni;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.WindowManager;
-import android.app.Application;
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -89,7 +86,7 @@ public class GL2JNIActivity extends Activity {
 	private void copyFile(InputStream in, OutputStream out) throws IOException {
 		byte[] buffer = new byte[1024];
 		int read;
-		while ((read = in.read(buffer)) != -1){
+		while ((read = in.read(buffer)) != -1) {
 			out.write(buffer, 0, read);
 		}
 	}

@@ -3,7 +3,6 @@ package com.android.gl2jni;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -16,6 +15,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 class GL2JNIView extends GLSurfaceView {
 	private static String TAG = "EJOY2D";
+	private static int FPS = 30;
 
 	public GL2JNIView(Context context) {
 		super(context);
@@ -76,7 +76,6 @@ class GL2JNIView extends GLSurfaceView {
 			egl.eglChooseConfig(display, s_configAttribs2, null, 0, num_config);
 
 			int numConfigs = num_config[0];
-
 			if (numConfigs <= 0) {
 				throw new IllegalArgumentException("No configs match configSpec");
 			}
@@ -124,7 +123,10 @@ class GL2JNIView extends GLSurfaceView {
 
 	private static class Renderer implements GLSurfaceView.Renderer {
 		public void onDrawFrame(GL10 gl) {
-			GL2JNILib.update();
+			long time = System.currentTimeMillis();
+			float dt = (time - lastTime) * 0.001f;
+			lastTime = time;
+			GL2JNILib.update(dt);
 		}
 
 		public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -132,6 +134,9 @@ class GL2JNIView extends GLSurfaceView {
 		}
 
 		public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+			lastTime = System.currentTimeMillis();
 		}
+
+		protected static long lastTime;
 	}
 }

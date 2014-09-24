@@ -12,15 +12,11 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
+#define FRAME_TIME (1.0f/30)
+
 static char data_path[1024];
+static float t;
 
-static void
-printGLString(const char *name, GLenum s) {
-	const char *v = (const char*)glGetString(s);
-	LOGI("GL %s = %s", name, v);
-}
-
-// JNI
 JNIEXPORT void JNICALL
 Java_com_android_gl2jni_GL2JNILib_init(JNIEnv *env, jobject obj, jstring path) {
 	const char *p = (*env)->GetStringUTFChars(env, path, 0);
@@ -32,17 +28,22 @@ Java_com_android_gl2jni_GL2JNILib_init(JNIEnv *env, jobject obj, jstring path) {
 
 JNIEXPORT void JNICALL
 Java_com_android_gl2jni_GL2JNILib_change(JNIEnv *env, jobject obj, jint width, jint height) {
-	printGLString("Version", GL_VERSION);
-	printGLString("Vendor", GL_VENDOR);
-	printGLString("Renderer", GL_RENDERER);
-	printGLString("Extensions", GL_EXTENSIONS);
+	LOGI("GL Version = %s", glGetString(GL_VERSION));
+	LOGI("GL Vendor = %s", glGetString(GL_VENDOR));
+	LOGI("GL Renderer = %s", glGetString(GL_RENDERER));
+	LOGI("GL Extensions = %s", glGetString(GL_EXTENSIONS));
 	LOGI("InitGL(%d, %d)", width, height);
 
+	t = 0;
 	ejoy2d_win_init(0, 0, width, height, 1.0f, data_path);
 }
 
 JNIEXPORT void JNICALL
-Java_com_android_gl2jni_GL2JNILib_update(JNIEnv *env, jobject obj) {
-	ejoy2d_win_update(0.01f);
-	ejoy2d_win_frame();
+Java_com_android_gl2jni_GL2JNILib_update(JNIEnv *env, jobject obj, jfloat dt) {
+	t += dt;
+	while (t > FRAME_TIME) {
+		t -= FRAME_TIME;
+		ejoy2d_win_update(FRAME_TIME);
+		ejoy2d_win_frame();
+	}
 }
