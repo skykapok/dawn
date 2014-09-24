@@ -64,10 +64,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH) \
                     $(LOCAL_PATH)/../../../engine/platform \
                     $(LOCAL_PATH)/../../../engine/lua
 
-LOCAL_LDLIBS := -llog -landroid -lEGL -lGLESv2
-
-LOCAL_STATIC_LIBRARIES := android_native_app_glue
+LOCAL_CFLAGS += -std=c99
+LOCAL_LDLIBS := -llog -lGLESv2
 
 include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,android/native_app_glue)
