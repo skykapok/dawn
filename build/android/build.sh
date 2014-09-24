@@ -1,9 +1,12 @@
 #!/bin/bash
 
+set -e
+
 rm -rf assets
-mkdir assets
-cp -rv ../../src assets
-cp -rv ../../res/package assets
+mkdir -p assets/files
+cp -rv ../../src assets/files
+cp -rv ../../res/package assets/files
+cp -rv ../../engine/ejoy2d assets/files
 
 ndk-build
 ant debug
