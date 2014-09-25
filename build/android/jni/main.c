@@ -67,3 +67,8 @@ Java_com_android_gl2jni_GL2JNILib_ondrawframe(JNIEnv *env, jobject obj, jfloat d
 		ejoy2d_win_frame();
 	}
 }
+
+JNIEXPORT void JNICALL
+Java_com_android_gl2jni_GL2JNILib_ontouchevent(JNIEnv *env, jobject obj, jint x, jint y, jint touch) {
+	ejoy2d_win_touch(x, y, touch);
+}

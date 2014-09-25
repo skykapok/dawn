@@ -27,6 +27,37 @@ class GL2JNIView extends GLSurfaceView {
 		setRenderer(new Renderer());
 	}
 
+	@Override public boolean onTouchEvent(MotionEvent e) {
+		int a = -1;
+		switch (e.getAction()) {
+			case MotionEvent.ACTION_MOVE:
+				a = 2;
+				break;
+
+			case MotionEvent.ACTION_UP:
+				a = 1;
+				break;
+
+			case MotionEvent.ACTION_DOWN:
+				a = 0;
+				break;
+		}
+
+		if (a != -1) {
+			final int x = (int)e.getX();
+			final int y = (int)e.getY();
+			final int touch = a;
+
+			queueEvent(new Runnable() {
+				public void run() {
+					GL2JNILib.ontouchevent(x, y, touch);
+				}
+			});
+		}
+
+		return true;
+	}
+
 	private static void checkEglError(String prompt, EGL10 egl) {
 		int error;
 		while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) {
