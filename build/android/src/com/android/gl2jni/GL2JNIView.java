@@ -23,7 +23,7 @@ class GL2JNIView extends GLSurfaceView {
 		getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
 		setEGLContextFactory(new ContextFactory());
-		setEGLConfigChooser(new ConfigChooser(8, 8, 8, 8, 24, 8));
+		setEGLConfigChooser(new ConfigChooser(8, 8, 8, 8, 0, 0));
 		setRenderer(new Renderer());
 	}
 
@@ -126,11 +126,11 @@ class GL2JNIView extends GLSurfaceView {
 			long time = System.currentTimeMillis();
 			float dt = (time - lastTime) * 0.001f;
 			lastTime = time;
-			GL2JNILib.update(dt);
+			GL2JNILib.ondrawframe(dt);
 		}
 
 		public void onSurfaceChanged(GL10 gl, int width, int height) {
-			GL2JNILib.change(width, height);
+			GL2JNILib.onsurfacechanged(width, height);
 		}
 
 		public void onSurfaceCreated(GL10 gl, EGLConfig config) {

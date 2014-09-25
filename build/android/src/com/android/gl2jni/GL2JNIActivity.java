@@ -21,7 +21,7 @@ public class GL2JNIActivity extends Activity {
 		super.onCreate(icicle);
 
 		String path = getFilesDir().getAbsolutePath();
-		GL2JNILib.init(path);
+		GL2JNILib.oncreate(path);
 
 		SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(this);
 		if (!preference.getBoolean("installed", false)) {
@@ -42,6 +42,11 @@ public class GL2JNIActivity extends Activity {
 	@Override protected void onResume() {
 		super.onResume();
 		mView.onResume();
+	}
+
+	@Override protected void onDestroy() {
+		super.onDestroy();
+		GL2JNILib.ondestroy();
 	}
 
 	private boolean copyAssetFolder(AssetManager assetManager, String fromAssetPath, String toPath) {

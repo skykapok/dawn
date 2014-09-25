@@ -81,6 +81,11 @@ ejoy2d_win_init(int orix, int oriy, int width, int height, float scale, const ch
 }
 
 void
+ejoy2d_win_release() {
+	ejoy2d_game_exit(G->game);
+}
+
+void
 ejoy2d_win_update(float dt) {
 	ejoy2d_game_update(G->game, dt);
 }

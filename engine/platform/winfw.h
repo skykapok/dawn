@@ -14,6 +14,7 @@
 #define ORIENT_RIGHT 3
 
 void ejoy2d_win_init(int orix, int oriy, int width, int height, float scale, const char* folder);
+void ejoy2d_win_release();
 void ejoy2d_win_frame();
 void ejoy2d_win_update(float dt);
 void ejoy2d_win_touch(int x, int y,int touch);
