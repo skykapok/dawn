@@ -15,9 +15,9 @@
 		5E4507C919AEF021001BB86D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E4507C819AEF021001BB86D /* AppDelegate.m */; };
 		5E4507CB19AEF021001BB86D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5E4507CA19AEF021001BB86D /* Images.xcassets */; };
 		5E5FDBD219B32B54009A6622 /* package in Resources */ = {isa = PBXBuildFile; fileRef = 5E5FDBD119B32B54009A6622 /* package */; };
+		5EE194E619D403F7009FD26F /* winfw.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EE194E419D403F7009FD26F /* winfw.c */; };
 		5EF01D5419B03F4100020640 /* EJViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5019B03F4100020640 /* EJViewController.m */; };
 		5EF01D5519B03F4100020640 /* font.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5119B03F4100020640 /* font.m */; };
-		5EF01D5619B03F4100020640 /* winfw.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5219B03F4100020640 /* winfw.c */; };
 		5EF01DB519B03F7A00020640 /* dfont.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5919B03F7A00020640 /* dfont.c */; };
 		5EF01DB619B03F7A00020640 /* ejoy2dgame.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5B19B03F7A00020640 /* ejoy2dgame.c */; };
 		5EF01DB719B03F7A00020640 /* fault.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D5D19B03F7A00020640 /* fault.c */; };
@@ -56,7 +56,7 @@
 		5EF01DD819B03F7A00020640 /* loadlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D9919B03F7A00020640 /* loadlib.c */; };
 		5EF01DD919B03F7A00020640 /* lobject.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D9A19B03F7A00020640 /* lobject.c */; };
 		5EF01DDA19B03F7A00020640 /* lopcodes.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D9C19B03F7A00020640 /* lopcodes.c */; };
-		5EF01DDB19B03F7A00020640 /* loslib.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D9E19B03F7A00020640 /* loslib.c */; };
+		5EF01DDB19B03F7A00020640 /* loslib.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D9E19B03F7A00020640 /* loslib.c */; settings = {COMPILER_FLAGS = "-w"; }; };
 		5EF01DDC19B03F7A00020640 /* lparser.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01D9F19B03F7A00020640 /* lparser.c */; };
 		5EF01DDD19B03F7A00020640 /* lstate.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01DA119B03F7A00020640 /* lstate.c */; };
 		5EF01DDE19B03F7A00020640 /* lstring.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EF01DA319B03F7A00020640 /* lstring.c */; };
@@ -86,11 +86,11 @@
 		5E4507C819AEF021001BB86D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		5E4507CA19AEF021001BB86D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		5E5FDBD119B32B54009A6622 /* package */ = {isa = PBXFileReference; lastKnownFileType = folder; name = package; path = ../../res/package; sourceTree = "<group>"; };
+		5EE194E419D403F7009FD26F /* winfw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = winfw.c; sourceTree = "<group>"; };
+		5EE194E519D403F7009FD26F /* winfw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = winfw.h; sourceTree = "<group>"; };
 		5EF01D4F19B03F4100020640 /* EJViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EJViewController.h; sourceTree = "<group>"; };
 		5EF01D5019B03F4100020640 /* EJViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EJViewController.m; sourceTree = "<group>"; };
 		5EF01D5119B03F4100020640 /* font.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = font.m; sourceTree = "<group>"; };
-		5EF01D5219B03F4100020640 /* winfw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = winfw.c; sourceTree = "<group>"; };
-		5EF01D5319B03F4100020640 /* winfw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = winfw.h; sourceTree = "<group>"; };
 		5EF01D5819B03F7A00020640 /* array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = array.h; sourceTree = "<group>"; };
 		5EF01D5919B03F7A00020640 /* dfont.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dfont.c; sourceTree = "<group>"; };
 		5EF01D5A19B03F7A00020640 /* dfont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dfont.h; sourceTree = "<group>"; };
@@ -212,6 +212,7 @@
 				5EF01DEC19B05AC900020640 /* src */,
 				5EF01DE619B03F9F00020640 /* ejoy2d */,
 				5EF01D5719B03F7A00020640 /* lib */,
+				5EE194E319D403F7009FD26F /* platform */,
 				5EF01D7B19B03F7A00020640 /* lua */,
 				5E4507BE19AEF021001BB86D /* dawn */,
 				5E4507B719AEF021001BB86D /* Frameworks */,
@@ -245,8 +246,6 @@
 				5EF01D4F19B03F4100020640 /* EJViewController.h */,
 				5EF01D5019B03F4100020640 /* EJViewController.m */,
 				5EF01D5119B03F4100020640 /* font.m */,
-				5EF01D5219B03F4100020640 /* winfw.c */,
-				5EF01D5319B03F4100020640 /* winfw.h */,
 				5E4507C719AEF021001BB86D /* AppDelegate.h */,
 				5E4507C819AEF021001BB86D /* AppDelegate.m */,
 				5E4507CA19AEF021001BB86D /* Images.xcassets */,
@@ -264,6 +263,16 @@
 				5E4507C619AEF021001BB86D /* dawn-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		5EE194E319D403F7009FD26F /* platform */ = {
+			isa = PBXGroup;
+			children = (
+				5EE194E419D403F7009FD26F /* winfw.c */,
+				5EE194E519D403F7009FD26F /* winfw.h */,
+			);
+			name = platform;
+			path = ../../engine/platform;
 			sourceTree = "<group>";
 		};
 		5EF01D5719B03F7A00020640 /* lib */ = {
@@ -474,6 +483,7 @@
 				5EF01DC419B03F7A00020640 /* spritepack.c in Sources */,
 				5EF01DDE19B03F7A00020640 /* lstring.c in Sources */,
 				5EF01DDB19B03F7A00020640 /* loslib.c in Sources */,
+				5EE194E619D403F7009FD26F /* winfw.c in Sources */,
 				5EF01DC819B03F7A00020640 /* lbaselib.c in Sources */,
 				5EF01DD719B03F7A00020640 /* lmem.c in Sources */,
 				5EF01DD819B03F7A00020640 /* loadlib.c in Sources */,
@@ -491,7 +501,6 @@
 				5EF01DC219B03F7A00020640 /* shader.c in Sources */,
 				5EF01DCE19B03F7A00020640 /* ldebug.c in Sources */,
 				5EF01DC719B03F7A00020640 /* lauxlib.c in Sources */,
-				5EF01D5619B03F4100020640 /* winfw.c in Sources */,
 				5EF01D5419B03F4100020640 /* EJViewController.m in Sources */,
 				5EF01DB819B03F7A00020640 /* label.c in Sources */,
 				5EF01DB519B03F7A00020640 /* dfont.c in Sources */,

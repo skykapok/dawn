@@ -59,85 +59,8 @@ _font_glyph_gray(NSString* str, void* buffer, struct font_context* ctx){
 	CGContextRelease(context);
 }
 
-static void
-convert_rgba_to_alpha(int sz, uint32_t * src, uint8_t *dest) {
-	int i;
-	for (i=0;i<sz;i++) {
-		uint8_t alpha = (src[i]>>24) & 0xff;
-		uint8_t color = (src[i] >> 8) & 0xff;
-		if (alpha == 0xff) {
-			dest[i]=255;
-		} else {
-			dest[i] = alpha / 2;
-		}
-	}
-}
-
-static void
-dump(int w, int h, uint32_t *src) {
-	static char map[] = "_123456789abcdef";
-	int i,j;
-	for (i=0;i<h;i++) {
-		for (j=0;j<w;j++) {
-			printf("%c",map[((src[w*i+j]>>24)&0xff)/16]);
-		}
-		printf("\n");
-	}
-}
-
-static inline void
-_font_glyph_rgba(NSString* str, void* buffer, struct font_context* ctx){
-	float w = (float)ctx->w;
-	float h = (float)ctx->h;
-	printf("%f, %f\n", w, h);
-	uint32_t tmp[ctx->w*ctx->h];
-	memset(tmp,0,sizeof(tmp));
-	UIFont* font = (__bridge id)(ctx->font);
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef context = CGBitmapContextCreate((void *)tmp, w, h, 8, w*4,
-												 colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault);
-
-	if (context == NULL) {
-		NSLog(@"the context is NULL! @ _font_glyph_rgba function ");
-		CGColorSpaceRelease(colorSpace);
-		return;
-	}
-
-	CGContextTranslateCTM(context, 0, h);
-	CGContextScaleCTM(context, 1, -1);
-
-	UIGraphicsPushContext(context);
-
-	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
-		CGContextSetLineWidth(context, 2);
-		CGContextSetTextDrawingMode(context, kCGTextFillStroke);
-		NSDictionary* _attr =[NSDictionary dictionaryWithObjectsAndKeys:
-							font, NSFontAttributeName,
-							[UIColor whiteColor], NSForegroundColorAttributeName,
-							[UIColor blackColor], NSStrokeColorAttributeName,
-							nil];
-		[str drawAtPoint:CGPointMake(1, 1) withAttributes:_attr];
-	} else {
-		CGContextSetRGBFillColor(context, 1, 1, 1, 1);
-
-		CGContextSetLineWidth(context, 4);
-		CGContextSetLineJoin(context, kCGLineJoinRound);
-		CGContextSetRGBStrokeColor(context, 0, 0, 0, 1);
-		CGContextSetTextDrawingMode(context, kCGTextStroke);
-		[str drawAtPoint:CGPointMake(2,2) withFont:font];
-
-		CGContextSetTextDrawingMode(context, kCGTextFill);
-		[str drawAtPoint:CGPointMake(2,2) withFont:font];
-	}
-
-	UIGraphicsPopContext();
-	CGContextRelease(context);
-
-	convert_rgba_to_alpha(ctx->w*ctx->h, tmp, buffer);
-}
-
 void
 font_glyph(const char * str, int unicode, void * buffer, struct font_context *ctx){
-	NSString * tmp = [NSString stringWithUTF8String: str];
-	_font_glyph_gray(tmp, buffer, ctx);
+    NSString * tmp = [NSString stringWithUTF8String: str];
+    _font_glyph_gray(tmp, buffer, ctx);
 }

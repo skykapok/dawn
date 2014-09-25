@@ -44,6 +44,9 @@ static EJViewController* _controller = nil;
         case UIInterfaceOrientationLandscapeRight:
             ejoy2d_win_rotate(w, h, s, ORIENT_RIGHT);
             break;
+
+        default:
+            break;
     }
 }
 
@@ -69,6 +72,7 @@ static EJViewController* _controller = nil;
 	view.context = self.context;
 
 	[EAGLContext setCurrentContext:self.context];
+    self.preferredFramesPerSecond = 30;
 
 	CGFloat screenScale = [[UIScreen mainScreen] scale];
 	CGRect bounds = [[UIScreen mainScreen] bounds];

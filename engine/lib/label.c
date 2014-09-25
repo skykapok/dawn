@@ -328,7 +328,7 @@ static void
 draw_line(const struct rich_text *rich, struct pack_label * l, struct srt *srt, const struct sprite_trans *arg,
           uint32_t color, int cy, int w, int start, int end, int *pre_char_cnt) {
     const char *str = rich->text;
-    int cx, j;
+    int cx=0, j;
     int size = l->size;
     if (l->auto_scale != 0 && w > l->width)
     {
