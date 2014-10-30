@@ -124,33 +124,6 @@ fill_srt(lua_State *L, struct srt *srt, int idx) {
 	srt->rot = rot * (1024.0 / 360.0);
 }
 
-static void
-fill_pp(lua_State *L, struct program_param *pp, int idx) {
-	if (lua_isnoneornil(L, idx)) {
-		pp->n = 0;
-		return;
-	}
-	int n = lua_rawlen(L, idx);
-	int i, j;
-	for (i=0;i<n;i++) {
-		lua_rawgeti(L, idx, i+1);
-        int pi = lua_gettop(L);
-		// index
-		lua_rawgeti(L, pi, 1);
-		pp->index[i] = luaL_checkint(L, -1);
-		// value
-		lua_rawgeti(L, pi, 2);
-		int vi = lua_gettop(L);
-		int vn = lua_rawlen(L, -1);
-		for (j=0;j<vn;j++) {
-			lua_rawgeti(L, vi, j+1);
-			pp->value[i][j] = (float)luaL_checknumber(L, -1);
-		}
-		lua_pop(L, vn + 3);
-	}
-    pp->n = n;
-}
-
 static int
 lgenoutline(lua_State *L) {
   label_gen_outline(lua_toboolean(L, 1));
@@ -365,6 +338,7 @@ lgetwmat(lua_State *L) {
 	}
 	return luaL_error(L, "Only anchor can get world matrix");
 }
+
 static int
 lgetwpos(lua_State *L) {
 	struct sprite *s = self(L);
@@ -376,13 +350,12 @@ lgetwpos(lua_State *L) {
 	} else {
 		struct srt srt;
 		fill_srt(L,&srt,2);
-		struct sprite *t = (struct sprite *)lua_touserdata(L, 3);
-		if (t == NULL) {
-			luaL_error(L, "Need target sprite");
-		}
+
+		struct matrix tmp;
+		sprite_matrix(s, &tmp);
 
 		int pos[2];
-		if (sprite_pos(s, &srt, t, pos) == 0) {
+		if (sprite_pos(s, &srt, &tmp, pos) == 0) {
 			lua_pushinteger(L, pos[0]);
 			lua_pushinteger(L, pos[1]);
 			return 2;
@@ -626,6 +599,13 @@ lgetparent(lua_State *L) {
 	return 1;
 }
 
+static int
+lgetprogram(lua_State *L) {
+    struct sprite *s = self(L);
+    lua_pushinteger(L, s->t.program);
+    return 1;
+}
+
 static void
 lgetter(lua_State *L) {
 	luaL_Reg l[] = {
@@ -644,6 +624,7 @@ lgetter(lua_State *L) {
 		{"parent_name", lgetparentname },	// todo: maybe unused , use parent instead
 		{"has_parent", lhasparent },	// todo: maybe unused , use parent instead
 		{"parent", lgetparent },
+        {"program", lgetprogram },
 		{NULL, NULL},
 	};
 	luaL_newlib(L,l);
@@ -810,10 +791,9 @@ static int
 ldraw(lua_State *L) {
 	struct sprite *s = self(L);
 	struct srt srt;
+
 	fill_srt(L,&srt,2);
-	struct program_param pp;
-	fill_pp(L,&pp,3);
-	sprite_draw(s, &srt, &pp);
+	sprite_draw(s, &srt);
 	return 0;
 }
 
@@ -822,8 +802,10 @@ laabb(lua_State *L) {
 	struct sprite *s = self(L);
 	struct srt srt;
 	fill_srt(L,&srt,2);
+	bool world = lua_toboolean(L, 3);
+	
 	int aabb[4];
-	sprite_aabb(s, &srt, aabb);
+	sprite_aabb(s, &srt, world, aabb);
 	int i;
 	for (i=0;i<4;i++) {
 		lua_pushinteger(L, aabb[i]);
@@ -928,7 +910,7 @@ lmatrix_multi_draw(lua_State *L) {
 			s->t.color = (uint32_t)lua_tounsigned(L, -1);
 			lua_pop(L, 2);
 
-			sprite_draw(s, NULL, NULL);
+			sprite_draw(s, NULL);
 		}
 	} else {
 		for (i = 0; i < cnt; i++) {
@@ -939,7 +921,7 @@ lmatrix_multi_draw(lua_State *L) {
 			s->t.color = (uint32_t)lua_tounsigned(L, -1);
 			lua_pop(L, 2);
 
-			sprite_draw(s, NULL, NULL);
+			sprite_draw(s, NULL);
 		}
 	}
 
@@ -1163,9 +1145,28 @@ lrecursion_frame(lua_State *L) {
 
 static int
 lenable_visible_test(lua_State *L) {
-    bool enable = lua_toboolean(L, 1);
-    enable_screen_visible_test(enable);
-    return 0;
+	// todo: remove this api
+	return 0;
+}
+
+static int
+lcalc_matrix(lua_State *L) {
+	struct sprite * s = self(L);
+	struct matrix * mat = lua_touserdata(L, 2);
+	if (mat == NULL) {
+		return luaL_argerror(L, 2, "need a matrix");
+	}
+	struct matrix *local_matrix = s->t.mat;
+	if (local_matrix) {
+		struct matrix tmp;
+		sprite_matrix(s, &tmp);
+		matrix_mul(mat, local_matrix, &tmp);
+	} else {
+		sprite_matrix(s, mat);
+	}
+
+	lua_settop(L, 2);
+	return 1;
 }
 
 static void
@@ -1197,6 +1198,7 @@ lmethod(lua_State *L) {
 		{ "children_name", lchildren_name },
 		{ "world_pos", lgetwpos },
 		{ "anchor_particle", lset_anchor_particle },
+		{ "calc_matrix", lcalc_matrix },
 		{ NULL, NULL, },
 	};
 	luaL_setfuncs(L,l2,nk);

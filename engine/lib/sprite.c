@@ -14,15 +14,10 @@
 #include <stdio.h>
 #include <limits.h>
 
-static bool enable_visible_test = true;
-void enable_screen_visible_test(bool enable) {
-	enable_visible_test = enable;
-}
-
 void
 sprite_drawquad(struct pack_picture *picture, struct pack_picture *mask, const struct srt *srt,  const struct sprite_trans *arg) {
 	struct matrix tmp;
-	float vb[16];
+	struct vertex_pack vb[4];
 	int i,j;
 	if (arg->mat == NULL) {
 		matrix_identity(&tmp);
@@ -46,24 +41,19 @@ sprite_drawquad(struct pack_picture *picture, struct pack_picture *mask, const s
 			float ty = q->texture_coord[j*2+1];
 
 			screen_trans(&vx,&vy);
-			texture_coord(q->texid, &tx, &ty);
-			vb[j*4+0] = vx;
-			vb[j*4+1] = vy;
-			vb[j*4+2] = tx;
-			vb[j*4+3] = ty;
+			vb[j].vx = vx;
+			vb[j].vy = vy;
+			vb[j].tx = tx;
+			vb[j].ty = ty;
 		}
-		if(!enable_visible_test || !screen_is_poly_invisible(vb,4,4))
-		{
-			if (mask != NULL) {
-					float tx = mask->rect[0].texture_coord[0];
-					float ty = mask->rect[0].texture_coord[1];
-					texture_coord(mask->rect[0].texid, &tx, &ty);
-					float delta_tx = tx - vb[2];
-					float delta_ty = ty - vb[3];
-					shader_mask(delta_tx, delta_ty);
-			}
-			shader_draw(vb, arg->color);
+		if (mask != NULL) {
+				float tx = mask->rect[0].texture_coord[0];
+				float ty = mask->rect[0].texture_coord[1];
+				float delta_tx = (tx - vb[0].tx) * (1.0f / 65535.0f);
+				float delta_ty = (ty - vb[0].ty) * (1.0f / 65535.0f);
+				shader_mask(delta_tx, delta_ty);
 		}
+		shader_draw(vb, arg->color, arg->additive);
 	}
 }
 
@@ -86,7 +76,7 @@ sprite_drawpolygon(struct pack_polygon *poly, const struct srt *srt, const struc
 		shader_texture(glid);
 		int pn = p->n;
 
-		ARRAY(float, vb, 4 * pn);
+		ARRAY(struct vertex_pack, vb, pn);
 
 		for (j=0;j<pn;j++) {
 			int xx = p->screen_coord[j*2+0];
@@ -100,13 +90,12 @@ sprite_drawpolygon(struct pack_polygon *poly, const struct srt *srt, const struc
 
 			screen_trans(&vx,&vy);
 
-			texture_coord(p->texid, &tx, &ty);
-			vb[j*4+0] = vx;
-			vb[j*4+1] = vy;
-			vb[j*4+2] = tx;
-			vb[j*4+3] = ty;
+			vb[j].vx = vx;
+			vb[j].vy = vy;
+			vb[j].tx = tx;
+			vb[j].ty = ty;
 		}
-		shader_drawpolygon(pn, vb, arg->color);
+		shader_drawpolygon(pn, vb, arg->color, arg->additive);
 	}
 }
 
@@ -315,8 +304,8 @@ color_add(uint32_t c1, uint32_t c2) {
 		clamp(b1+b2);
 }
 
-static struct sprite_trans *
-trans_mul(struct sprite_trans *a, struct sprite_trans *b, struct sprite_trans *t, struct matrix *tmp_matrix) {
+struct sprite_trans *
+sprite_trans_mul(struct sprite_trans *a, struct sprite_trans *b, struct sprite_trans *t, struct matrix *tmp_matrix) {
 	if (b == NULL) {
 		return a;
 	}
@@ -354,15 +343,12 @@ mat_mul(struct matrix *a, struct matrix *b, struct matrix *tmp) {
 }
 
 static void
-switch_program(struct sprite_trans *t, struct program_param *pp, int def) {
+switch_program(struct sprite_trans *t, int def) {
 	int prog = t->program;
 	if (prog == PROGRAM_DEFAULT) {
 		prog = def;
 	}
-	shader_program(prog, t->additive);
-	if (pp) {
-		shader_param(pp);
-	}
+	shader_program(prog);
 }
 
 static void
@@ -415,24 +401,15 @@ anchor_update(struct sprite *s, struct srt *srt, struct sprite_trans *arg) {
 }
 
 static void
-label_pos(int m[6], struct pack_label * l, struct srt *srt, const struct sprite_trans *arg, int pos[2]) {
+label_pos(int m[6], struct pack_label * l, int pos[2]) {
 	float c_x = l->width * SCREEN_SCALE / 2.0;
 	float c_y = l->height * SCREEN_SCALE / 2.0;
 	pos[0] = (int)((c_x * m[0] + c_y * m[2]) / 1024 + m[4])/SCREEN_SCALE;
 	pos[1] = (int)((c_x * m[1] + c_y * m[3]) / 1024 + m[5])/SCREEN_SCALE;
 }
 
-/*
 static void
-panel_pos(int m[6], struct pack_pannel * l, struct srt *srt, const struct sprite_trans *arg, int pos[2]) {
-	float c_x = l->width * SCREEN_SCALE / 2.0;
-	float c_y = l->height * SCREEN_SCALE / 2.0;
-	pos[0] = (int)((c_x * m[0] + c_y * m[2]) / 1024 + m[4])/SCREEN_SCALE;
-	pos[1] = (int)((c_x * m[1] + c_y * m[3]) / 1024 + m[5])/SCREEN_SCALE;
-}
-*/
-static void
-picture_pos(int m[6], struct pack_picture *picture, const struct srt *srt,  const struct sprite_trans *arg, int pos[2]) {
+picture_pos(int m[6], struct pack_picture *picture, int pos[2]) {
 	int max_x = INT_MIN;
 	int max_y = -INT_MAX;
 	int min_x = INT_MAX;
@@ -455,61 +432,6 @@ picture_pos(int m[6], struct pack_picture *picture, const struct srt *srt,  cons
 	float c_y = (max_y + min_y) / 2.0;
 	pos[0] = (int)((c_x * m[0] + c_y * m[2]) / 1024 + m[4])/SCREEN_SCALE;
 	pos[1] = (int)((c_x * m[1] + c_y * m[3]) / 1024 + m[5])/SCREEN_SCALE;
-}
-
-static int
-child_pos(struct sprite *s, struct srt *srt, struct sprite_trans *ts, struct sprite *t, int pos[2]) {
-	struct sprite_trans temp;
-	struct matrix temp_matrix;
-	struct sprite_trans *st = trans_mul(&s->t, ts, &temp, &temp_matrix);
-	if (s == t) {
-		struct matrix tmp;
-		if (st->mat == NULL) {
-			matrix_identity(&tmp);
-		} else {
-			tmp = *st->mat;
-		}
-		matrix_srt(&tmp, srt);
-		switch (s->type) {
-		case TYPE_PICTURE:
-			picture_pos(tmp.m, s->s.pic, srt, st, pos);
-			return 0;
-		case TYPE_LABEL:
-			label_pos(tmp.m, s->s.label, srt, st, pos);
-			return 0;
-		case TYPE_ANIMATION:
-		case TYPE_PANNEL:
-			pos[0] = tmp.m[4] / SCREEN_SCALE;
-			pos[1] = tmp.m[5] / SCREEN_SCALE;
-			return 0;
-		default:
-			return 1;
-		}
-	}
-
-	if (s->type != TYPE_ANIMATION){
-		return 1;
-	}
-
-	struct pack_animation *ani = s->s.ani;
-	int frame = real_frame(s) + s->start_frame;
-	struct pack_frame * pf = &ani->frame[frame];
-	int i;
-	for (i=0;i<pf->n;i++) {
-		struct pack_part *pp = &pf->part[i];
-		int index = pp->component_id;
-		struct sprite * child = s->data.children[index];
-		if (child == NULL) {
-			continue;
-		}
-		struct sprite_trans temp2;
-		struct matrix temp_matrix2;
-		struct sprite_trans *ct = trans_mul(&pp->t, st, &temp2, &temp_matrix2);
-		if (child_pos(child, srt, ct, t, pos) == 0) {
-			return 0;
-		}
-	}
-	return 1;
 }
 
 static void
@@ -536,29 +458,29 @@ drawparticle(struct sprite *s, struct particle_system *ps, struct pack_picture *
 }
 
 static int
-draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts, struct program_param *param) {
+draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts) {
 	struct sprite_trans temp;
 	struct matrix temp_matrix;
-	struct sprite_trans *t = trans_mul(&s->t, ts, &temp, &temp_matrix);
+	struct sprite_trans *t = sprite_trans_mul(&s->t, ts, &temp, &temp_matrix);
 	switch (s->type) {
 	case TYPE_PICTURE:
-		switch_program(t, param, PROGRAM_PICTURE);
+		switch_program(t, PROGRAM_PICTURE);
 		sprite_drawquad(s->s.pic, s->data.mask, srt, t);
 		return 0;
 	case TYPE_POLYGON:
-		switch_program(t, param, PROGRAM_PICTURE);
+		switch_program(t, PROGRAM_PICTURE);
 		sprite_drawpolygon(s->s.poly, srt, t);
 		return 0;
 	case TYPE_LABEL:
 		if (s->data.rich_text) {
 			t->program = PROGRAM_DEFAULT;	// label never set user defined program
-			switch_program(t, param, s->s.label->edge ? PROGRAM_TEXT_EDGE : PROGRAM_TEXT);
+			switch_program(t, s->s.label->edge ? PROGRAM_TEXT_EDGE : PROGRAM_TEXT);
 			label_draw(s->data.rich_text, s->s.label, srt, t);
 		}
 		return 0;
 	case TYPE_ANCHOR:
 		if (s->data.anchor->ps){
-			switch_program(t, param, PROGRAM_PICTURE);
+			switch_program(t, PROGRAM_PICTURE);
 			drawparticle(s, s->data.anchor->ps, s->data.anchor->pic, srt);
 		}
 		anchor_update(s, srt, t);
@@ -592,8 +514,8 @@ draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts, struct p
 		}
 		struct sprite_trans temp2;
 		struct matrix temp_matrix2;
-		struct sprite_trans *ct = trans_mul(&pp->t, t, &temp2, &temp_matrix2);
-		scissor += draw_child(child, srt, ct, param);
+		struct sprite_trans *ct = sprite_trans_mul(&pp->t, t, &temp2, &temp_matrix2);
+		scissor += draw_child(child, srt, ct);
 	}
 	for (i=0;i<scissor;i++) {
 		scissor_pop();
@@ -619,9 +541,9 @@ sprite_child_visible(struct sprite *s, const char * childname) {
 }
 
 void
-sprite_draw(struct sprite *s, struct srt *srt, struct program_param *pp) {
+sprite_draw(struct sprite *s, struct srt *srt) {
 	if (s->visible) {
-		draw_child(s, srt, NULL, pp);
+		draw_child(s, srt, NULL);
 	}
 }
 
@@ -633,13 +555,74 @@ sprite_draw_as_child(struct sprite *s, struct srt *srt, struct matrix *mat, uint
 		st.color = color;
 		st.additive = 0;
 		st.program = PROGRAM_DEFAULT;
-		draw_child(s, srt, &st, NULL);
+		draw_child(s, srt, &st);
 	}
 }
 
 int
-sprite_pos(struct sprite *s, struct srt *srt, struct sprite *t, int pos[2]) {
-	return child_pos(s, srt, NULL, t, pos);
+sprite_pos(struct sprite *s, struct srt *srt, struct matrix *m, int pos[2]) {
+	struct matrix temp;
+	struct matrix *t = mat_mul(s->t.mat, m, &temp);
+	matrix_srt(t, srt);
+	switch (s->type) {
+	case TYPE_PICTURE:
+		picture_pos(t->m, s->s.pic, pos);
+		return 0;
+	case TYPE_LABEL:
+		label_pos(t->m, s->s.label, pos);
+		return 0;
+	case TYPE_ANIMATION:
+	case TYPE_PANNEL:
+		pos[0] = t->m[4] / SCREEN_SCALE;
+		pos[1] = t->m[5] / SCREEN_SCALE;
+		return 0;
+	default:
+		return 1;
+	}
+
+}
+
+void
+sprite_matrix(struct sprite * self, struct matrix *mat) {
+	struct sprite * parent = self->parent;
+	if (parent) {
+		assert(parent->type == TYPE_ANIMATION);
+		sprite_matrix(parent, mat);
+		struct matrix tmp;
+		struct matrix * parent_mat = parent->t.mat;
+
+		struct matrix * child_mat = NULL;
+		struct pack_animation *ani = parent->s.ani;
+		int frame = real_frame(parent) + parent->start_frame;
+		struct pack_frame * pf = &ani->frame[frame];
+		int i;
+		for (i=0;i<pf->n;i++) {
+			struct pack_part *pp = &pf->part[i];
+			int index = pp->component_id;
+			struct sprite * child = parent->data.children[index];
+			if (child == self) {
+				child_mat = pp->t.mat;
+				break;
+			}
+		}
+
+		if (parent_mat == NULL && child_mat == NULL)
+			return;
+
+		if (parent_mat) {
+			matrix_mul(&tmp, parent_mat, mat);
+		} else {
+			tmp = *mat;
+		}
+
+		if (child_mat) {
+			matrix_mul(mat, child_mat, &tmp);
+		} else {
+			*mat = tmp;
+		}
+	} else {
+		matrix_identity(mat);
+	}
 }
 
 // aabb
@@ -757,14 +740,20 @@ child_aabb(struct sprite *s, struct srt *srt, struct matrix * mat, int aabb[4]) 
 }
 
 void
-sprite_aabb(struct sprite *s, struct srt *srt, int aabb[4]) {
+sprite_aabb(struct sprite *s, struct srt *srt, bool world_aabb, int aabb[4]) {
 	int i;
 	if (s->visible) {
+		struct matrix tmp;
+		if (world_aabb) {
+			sprite_matrix(s, &tmp);
+		} else {
+			matrix_identity(&tmp);
+		}
 		aabb[0] = INT_MAX;
 		aabb[1] = INT_MAX;
 		aabb[2] = INT_MIN;
 		aabb[3] = INT_MIN;
-		child_aabb(s,srt,NULL,aabb);
+		child_aabb(s,srt,&tmp,aabb);
 		for (i=0;i<4;i++)
 			aabb[i] /= SCREEN_SCALE;
 	} else {
