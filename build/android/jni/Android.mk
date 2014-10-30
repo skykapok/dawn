@@ -12,17 +12,22 @@ LOCAL_SRC_FILES += \
                    ../../../engine/lib/label.c \
                    ../../../engine/lib/lmatrix.c \
                    ../../../engine/lib/lparticle.c \
+                   ../../../engine/lib/lrenderbuffer.c \
                    ../../../engine/lib/lshader.c \
                    ../../../engine/lib/lsprite.c \
                    ../../../engine/lib/matrix.c \
                    ../../../engine/lib/particle.c \
                    ../../../engine/lib/ppm.c \
+                   ../../../engine/lib/renderbuffer.c \
                    ../../../engine/lib/scissor.c \
                    ../../../engine/lib/screen.c \
                    ../../../engine/lib/shader.c \
                    ../../../engine/lib/sprite.c \
                    ../../../engine/lib/spritepack.c \
                    ../../../engine/lib/texture.c \
+                   ../../../engine/lib/render/carray.c \
+                   ../../../engine/lib/render/log.c \
+                   ../../../engine/lib/render/render.c \
                    ../../../engine/platform/winfw.c
 
 LOCAL_SRC_FILES += \
@@ -61,6 +66,7 @@ LOCAL_SRC_FILES += \
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH) \
                     $(LOCAL_PATH)/../../../engine/lib \
+                    $(LOCAL_PATH)/../../../engine/lib/render \
                     $(LOCAL_PATH)/../../../engine/platform \
                     $(LOCAL_PATH)/../../../engine/lua
 
