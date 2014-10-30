@@ -71,6 +71,11 @@
 		5EF01DE919B041F800020640 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EF01DE819B041F800020640 /* GLKit.framework */; };
 		5EF01DEB19B041FD00020640 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EF01DEA19B041FD00020640 /* OpenGLES.framework */; };
 		5EF01DED19B05AC900020640 /* src in Resources */ = {isa = PBXBuildFile; fileRef = 5EF01DEC19B05AC900020640 /* src */; };
+		5EFC730C1A0241F10070CF52 /* lrenderbuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC72FF1A0241F10070CF52 /* lrenderbuffer.c */; };
+		5EFC730D1A0241F10070CF52 /* carray.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC73041A0241F10070CF52 /* carray.c */; };
+		5EFC730E1A0241F10070CF52 /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC73061A0241F10070CF52 /* log.c */; };
+		5EFC730F1A0241F10070CF52 /* render.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC73081A0241F10070CF52 /* render.c */; };
+		5EFC73101A0241F10070CF52 /* renderbuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC730A1A0241F10070CF52 /* renderbuffer.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -187,6 +192,18 @@
 		5EF01DE819B041F800020640 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		5EF01DEA19B041FD00020640 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		5EF01DEC19B05AC900020640 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../../src; sourceTree = "<group>"; };
+		5EFC72FF1A0241F10070CF52 /* lrenderbuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lrenderbuffer.c; sourceTree = "<group>"; };
+		5EFC73001A0241F10070CF52 /* lrenderbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lrenderbuffer.h; sourceTree = "<group>"; };
+		5EFC73021A0241F10070CF52 /* blendmode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blendmode.h; sourceTree = "<group>"; };
+		5EFC73031A0241F10070CF52 /* block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
+		5EFC73041A0241F10070CF52 /* carray.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = carray.c; sourceTree = "<group>"; };
+		5EFC73051A0241F10070CF52 /* carray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = carray.h; sourceTree = "<group>"; };
+		5EFC73061A0241F10070CF52 /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = log.c; sourceTree = "<group>"; };
+		5EFC73071A0241F10070CF52 /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
+		5EFC73081A0241F10070CF52 /* render.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = render.c; sourceTree = "<group>"; };
+		5EFC73091A0241F10070CF52 /* render.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = render.h; sourceTree = "<group>"; };
+		5EFC730A1A0241F10070CF52 /* renderbuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = renderbuffer.c; sourceTree = "<group>"; };
+		5EFC730B1A0241F10070CF52 /* renderbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderbuffer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -278,6 +295,11 @@
 		5EF01D5719B03F7A00020640 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				5EFC72FF1A0241F10070CF52 /* lrenderbuffer.c */,
+				5EFC73001A0241F10070CF52 /* lrenderbuffer.h */,
+				5EFC73011A0241F10070CF52 /* render */,
+				5EFC730A1A0241F10070CF52 /* renderbuffer.c */,
+				5EFC730B1A0241F10070CF52 /* renderbuffer.h */,
 				5EF01D5819B03F7A00020640 /* array.h */,
 				5EF01D5919B03F7A00020640 /* dfont.c */,
 				5EF01D5A19B03F7A00020640 /* dfont.h */,
@@ -383,6 +405,21 @@
 			path = ../../engine/lua;
 			sourceTree = "<group>";
 		};
+		5EFC73011A0241F10070CF52 /* render */ = {
+			isa = PBXGroup;
+			children = (
+				5EFC73021A0241F10070CF52 /* blendmode.h */,
+				5EFC73031A0241F10070CF52 /* block.h */,
+				5EFC73041A0241F10070CF52 /* carray.c */,
+				5EFC73051A0241F10070CF52 /* carray.h */,
+				5EFC73061A0241F10070CF52 /* log.c */,
+				5EFC73071A0241F10070CF52 /* log.h */,
+				5EFC73081A0241F10070CF52 /* render.c */,
+				5EFC73091A0241F10070CF52 /* render.h */,
+			);
+			path = render;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -474,6 +511,7 @@
 				5EF01DE019B03F7A00020640 /* ltable.c in Sources */,
 				5EF01DBE19B03F7A00020640 /* particle.c in Sources */,
 				5EF01D5519B03F4100020640 /* font.m in Sources */,
+				5EFC730E1A0241F10070CF52 /* log.c in Sources */,
 				5EF01DDC19B03F7A00020640 /* lparser.c in Sources */,
 				5EF01DD119B03F7A00020640 /* lfunc.c in Sources */,
 				5EF01DC919B03F7A00020640 /* lbitlib.c in Sources */,
@@ -487,6 +525,7 @@
 				5EF01DC819B03F7A00020640 /* lbaselib.c in Sources */,
 				5EF01DD719B03F7A00020640 /* lmem.c in Sources */,
 				5EF01DD819B03F7A00020640 /* loadlib.c in Sources */,
+				5EFC730D1A0241F10070CF52 /* carray.c in Sources */,
 				5EF01DE219B03F7A00020640 /* ltm.c in Sources */,
 				5EF01DDA19B03F7A00020640 /* lopcodes.c in Sources */,
 				5EF01DDD19B03F7A00020640 /* lstate.c in Sources */,
@@ -501,6 +540,7 @@
 				5EF01DC219B03F7A00020640 /* shader.c in Sources */,
 				5EF01DCE19B03F7A00020640 /* ldebug.c in Sources */,
 				5EF01DC719B03F7A00020640 /* lauxlib.c in Sources */,
+				5EFC730F1A0241F10070CF52 /* render.c in Sources */,
 				5EF01D5419B03F4100020640 /* EJViewController.m in Sources */,
 				5EF01DB819B03F7A00020640 /* label.c in Sources */,
 				5EF01DB519B03F7A00020640 /* dfont.c in Sources */,
@@ -508,6 +548,7 @@
 				5EF01DBA19B03F7A00020640 /* lparticle.c in Sources */,
 				5EF01DD419B03F7A00020640 /* liolib.c in Sources */,
 				5EF01DD019B03F7A00020640 /* ldump.c in Sources */,
+				5EFC73101A0241F10070CF52 /* renderbuffer.c in Sources */,
 				5EF01DCF19B03F7A00020640 /* ldo.c in Sources */,
 				5EF01DBD19B03F7A00020640 /* matrix.c in Sources */,
 				5EF01DCB19B03F7A00020640 /* lcorolib.c in Sources */,
@@ -517,6 +558,7 @@
 				5EF01DB619B03F7A00020640 /* ejoy2dgame.c in Sources */,
 				5EF01DCD19B03F7A00020640 /* ldblib.c in Sources */,
 				5E4507C919AEF021001BB86D /* AppDelegate.m in Sources */,
+				5EFC730C1A0241F10070CF52 /* lrenderbuffer.c in Sources */,
 				5E4507C519AEF021001BB86D /* main.m in Sources */,
 				5EF01DCC19B03F7A00020640 /* lctype.c in Sources */,
 				5EF01DB919B03F7A00020640 /* lmatrix.c in Sources */,
@@ -575,7 +617,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../../engine/lua ../../engine/lib";
+				USER_HEADER_SEARCH_PATHS = "../../engine/lua ../../engine/lib ../../engine/lib/render";
 			};
 			name = Debug;
 		};
@@ -608,7 +650,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../../engine/lua ../../engine/lib";
+				USER_HEADER_SEARCH_PATHS = "../../engine/lua ../../engine/lib ../../engine/lib/render";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
