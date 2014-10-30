@@ -1,4 +1,4 @@
-local shader = require "ejoy2d.shader"
+local ej = require "ejoy2d"
 
 local vs = [[
 attribute vec4 position;
@@ -84,15 +84,38 @@ void main() {
 
 local M = {}
 
-function M.init()
-	shader.load("sky", sky_fs, vs, {far="4f", near="4f"})
-	shader.load("sea", sea_fs, vs,
+function M:init()
+	self.v_sky = ej.define_shader(
 		{
-			t="1f", t1="1f",
-			sx="1f",
-			far="4f", near="4f", spec="4f", refl="4f"
+			name = "sky",
+			fs = sky_fs,
+			vs = vs,
+			uniform = {
+				{ name = "far", type = "float4" },
+				{ name = "near", type = "float4" },
+			}
 		})
-	shader.load("glow", glow_fs, vs)
+	self.v_sea = ej.define_shader(
+		{
+			name = "sea",
+			fs = sea_fs,
+			vs = vs,
+			uniform = {
+				{ name = "t", type = "float" },
+				{ name = "t1", type = "float" },
+				{ name = "sx", type = "float" },
+				{ name = "far", type = "float4" },
+				{ name = "near", type = "float4" },
+				{ name = "spec", type = "float4" },
+				{ name = "refl", type = "float4" },
+			}
+		})
+	self.v_glow = ej.define_shader(
+		{
+			name = "glow",
+			fs = glow_fs,
+			vs = vs,
+		})
 end
 
 return M

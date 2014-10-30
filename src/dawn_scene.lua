@@ -1,6 +1,10 @@
 local ej = require "ejoy2d"
 local fw = require "ejoy2d.framework"
+local shader = require "dawn_shader"
 local CONFIG = require "dawn_config"
+
+local unpack = table.unpack
+local format = string.format
 
 local sw = fw.ScreenWidth
 local sh = fw.ScreenHeight
@@ -150,14 +154,14 @@ function M:update_sim()
 	local h = math.floor(self.v_time)
 	local m = self.v_time - h
 
-	self.v_label.text = string.format("%02d:%02d", h, m*60)
+	self.v_label.text = format("%02d:%02d", h, m*60)
 
 	local s1 = CONFIG[h+1]
 	local s2 = CONFIG[h+2]
 
 	-- sky
-	self.v_sky.program_param.far = _mix4(s1.sky_far, s2.sky_far, m)
-	self.v_sky.program_param.near = _mix4(s1.sky_near, s2.sky_near, m)
+	shader.v_sky.far(unpack(_mix4(s1.sky_far, s2.sky_far, m)))
+	shader.v_sky.near(unpack(_mix4(s1.sky_near, s2.sky_near, m)))
 	self.v_sky:draw()
 
 	-- star
@@ -223,13 +227,13 @@ function M:update_sim()
 		self.v_t01_dir = -self.v_t01_dir
 	end
 
-	self.v_sea.program_param.t = self.v_t0x
-	self.v_sea.program_param.t1 = self.v_t01
-	self.v_sea.program_param.sx = x / sw
-	self.v_sea.program_param.far = _mix4(s1.sea_far, s2.sea_far, m)
-	self.v_sea.program_param.near = _mix4(s1.sea_near, s2.sea_near, m)
-	self.v_sea.program_param.spec = _mix4(s1.sea_spec, s2.sea_spec, m)
-	self.v_sea.program_param.refl = rc
+	shader.v_sea.t(self.v_t0x)
+	shader.v_sea.t1(self.v_t01)
+	shader.v_sea.sx(x / sw)
+	shader.v_sea.far(unpack(_mix4(s1.sea_far, s2.sea_far, m)))
+	shader.v_sea.near(unpack(_mix4(s1.sea_near, s2.sea_near, m)))
+	shader.v_sea.spec(unpack(_mix4(s1.sea_spec, s2.sea_spec, m)))
+	shader.v_sea.refl(unpack(rc))
 	self.v_sea:draw()
 
 	-- hud
