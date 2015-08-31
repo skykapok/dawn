@@ -76,6 +76,15 @@
 		5EFC730E1A0241F10070CF52 /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC73061A0241F10070CF52 /* log.c */; };
 		5EFC730F1A0241F10070CF52 /* render.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC73081A0241F10070CF52 /* render.c */; };
 		5EFC73101A0241F10070CF52 /* renderbuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFC730A1A0241F10070CF52 /* renderbuffer.c */; };
+		5EFEF6CE1B93157E007E9D00 /* ad_hardware_mac_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6C51B93157E007E9D00 /* ad_hardware_mac_ios.m */; };
+		5EFEF6CF1B93157E007E9D00 /* ad_mp3.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6C61B93157E007E9D00 /* ad_mp3.c */; };
+		5EFEF6D01B93157E007E9D00 /* ad_tools.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6C71B93157E007E9D00 /* ad_tools.c */; };
+		5EFEF6D11B93157E007E9D00 /* ad_wav.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6C81B93157E007E9D00 /* ad_wav.c */; };
+		5EFEF6D21B93157E007E9D00 /* oal.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6C91B93157E007E9D00 /* oal.c */; };
+		5EFEF6D31B93157E007E9D00 /* oal_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6CB1B93157E007E9D00 /* oal_decode.c */; };
+		5EFEF6DA1B9315A1007E9D00 /* lgeometry.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6D51B9315A1007E9D00 /* lgeometry.c */; };
+		5EFEF6DB1B9315A1007E9D00 /* screenshot.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6D81B9315A1007E9D00 /* screenshot.c */; };
+		5EFEF6DE1B931751007E9D00 /* lutf8lib.c in Sources */ = {isa = PBXBuildFile; fileRef = 5EFEF6DD1B931751007E9D00 /* lutf8lib.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -204,6 +213,21 @@
 		5EFC73091A0241F10070CF52 /* render.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = render.h; sourceTree = "<group>"; };
 		5EFC730A1A0241F10070CF52 /* renderbuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = renderbuffer.c; sourceTree = "<group>"; };
 		5EFC730B1A0241F10070CF52 /* renderbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderbuffer.h; sourceTree = "<group>"; };
+		5EFEF6C51B93157E007E9D00 /* ad_hardware_mac_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ad_hardware_mac_ios.m; sourceTree = "<group>"; };
+		5EFEF6C61B93157E007E9D00 /* ad_mp3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ad_mp3.c; sourceTree = "<group>"; };
+		5EFEF6C71B93157E007E9D00 /* ad_tools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ad_tools.c; sourceTree = "<group>"; };
+		5EFEF6C81B93157E007E9D00 /* ad_wav.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ad_wav.c; sourceTree = "<group>"; };
+		5EFEF6C91B93157E007E9D00 /* oal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oal.c; sourceTree = "<group>"; };
+		5EFEF6CA1B93157E007E9D00 /* oal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oal.h; sourceTree = "<group>"; };
+		5EFEF6CB1B93157E007E9D00 /* oal_decode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = oal_decode.c; sourceTree = "<group>"; };
+		5EFEF6CC1B93157E007E9D00 /* oal_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oal_decode.h; sourceTree = "<group>"; };
+		5EFEF6D51B9315A1007E9D00 /* lgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lgeometry.c; sourceTree = "<group>"; };
+		5EFEF6D61B9315A1007E9D00 /* lgeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lgeometry.h; sourceTree = "<group>"; };
+		5EFEF6D71B9315A1007E9D00 /* material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = material.h; sourceTree = "<group>"; };
+		5EFEF6D81B9315A1007E9D00 /* screenshot.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = screenshot.c; sourceTree = "<group>"; };
+		5EFEF6D91B9315A1007E9D00 /* screenshot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screenshot.h; sourceTree = "<group>"; };
+		5EFEF6DC1B931751007E9D00 /* lprefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lprefix.h; sourceTree = "<group>"; };
+		5EFEF6DD1B931751007E9D00 /* lutf8lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lutf8lib.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -295,6 +319,12 @@
 		5EF01D5719B03F7A00020640 /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				5EFEF6D51B9315A1007E9D00 /* lgeometry.c */,
+				5EFEF6D61B9315A1007E9D00 /* lgeometry.h */,
+				5EFEF6D71B9315A1007E9D00 /* material.h */,
+				5EFEF6D81B9315A1007E9D00 /* screenshot.c */,
+				5EFEF6D91B9315A1007E9D00 /* screenshot.h */,
+				5EFEF6C31B93157E007E9D00 /* audio */,
 				5EFC72FF1A0241F10070CF52 /* lrenderbuffer.c */,
 				5EFC73001A0241F10070CF52 /* lrenderbuffer.h */,
 				5EFC73011A0241F10070CF52 /* render */,
@@ -343,6 +373,8 @@
 		5EF01D7B19B03F7A00020640 /* lua */ = {
 			isa = PBXGroup;
 			children = (
+				5EFEF6DC1B931751007E9D00 /* lprefix.h */,
+				5EFEF6DD1B931751007E9D00 /* lutf8lib.c */,
 				5EF01D7C19B03F7A00020640 /* lapi.c */,
 				5EF01D7D19B03F7A00020640 /* lapi.h */,
 				5EF01D7E19B03F7A00020640 /* lauxlib.c */,
@@ -420,6 +452,29 @@
 			path = render;
 			sourceTree = "<group>";
 		};
+		5EFEF6C31B93157E007E9D00 /* audio */ = {
+			isa = PBXGroup;
+			children = (
+				5EFEF6C41B93157E007E9D00 /* decode */,
+				5EFEF6C91B93157E007E9D00 /* oal.c */,
+				5EFEF6CA1B93157E007E9D00 /* oal.h */,
+				5EFEF6CB1B93157E007E9D00 /* oal_decode.c */,
+				5EFEF6CC1B93157E007E9D00 /* oal_decode.h */,
+			);
+			path = audio;
+			sourceTree = "<group>";
+		};
+		5EFEF6C41B93157E007E9D00 /* decode */ = {
+			isa = PBXGroup;
+			children = (
+				5EFEF6C51B93157E007E9D00 /* ad_hardware_mac_ios.m */,
+				5EFEF6C61B93157E007E9D00 /* ad_mp3.c */,
+				5EFEF6C71B93157E007E9D00 /* ad_tools.c */,
+				5EFEF6C81B93157E007E9D00 /* ad_wav.c */,
+			);
+			path = decode;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -449,6 +504,11 @@
 			attributes = {
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = ejoy;
+				TargetAttributes = {
+					5E4507B419AEF021001BB86D = {
+						DevelopmentTeam = QY9Z4UFE3R;
+					};
+				};
 			};
 			buildConfigurationList = 5E4507B019AEF021001BB86D /* Build configuration list for PBXProject "dawn" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -515,20 +575,24 @@
 				5EF01DDC19B03F7A00020640 /* lparser.c in Sources */,
 				5EF01DD119B03F7A00020640 /* lfunc.c in Sources */,
 				5EF01DC919B03F7A00020640 /* lbitlib.c in Sources */,
+				5EFEF6DB1B9315A1007E9D00 /* screenshot.c in Sources */,
 				5EF01DC019B03F7A00020640 /* scissor.c in Sources */,
 				5EF01DC519B03F7A00020640 /* texture.c in Sources */,
+				5EFEF6DA1B9315A1007E9D00 /* lgeometry.c in Sources */,
 				5EF01DBB19B03F7A00020640 /* lshader.c in Sources */,
 				5EF01DC419B03F7A00020640 /* spritepack.c in Sources */,
 				5EF01DDE19B03F7A00020640 /* lstring.c in Sources */,
 				5EF01DDB19B03F7A00020640 /* loslib.c in Sources */,
 				5EE194E619D403F7009FD26F /* winfw.c in Sources */,
 				5EF01DC819B03F7A00020640 /* lbaselib.c in Sources */,
+				5EFEF6D21B93157E007E9D00 /* oal.c in Sources */,
 				5EF01DD719B03F7A00020640 /* lmem.c in Sources */,
 				5EF01DD819B03F7A00020640 /* loadlib.c in Sources */,
 				5EFC730D1A0241F10070CF52 /* carray.c in Sources */,
 				5EF01DE219B03F7A00020640 /* ltm.c in Sources */,
 				5EF01DDA19B03F7A00020640 /* lopcodes.c in Sources */,
 				5EF01DDD19B03F7A00020640 /* lstate.c in Sources */,
+				5EFEF6D01B93157E007E9D00 /* ad_tools.c in Sources */,
 				5EF01DC619B03F7A00020640 /* lapi.c in Sources */,
 				5EF01DCA19B03F7A00020640 /* lcode.c in Sources */,
 				5EF01DE319B03F7A00020640 /* lundump.c in Sources */,
@@ -539,6 +603,7 @@
 				5EF01DBC19B03F7A00020640 /* lsprite.c in Sources */,
 				5EF01DC219B03F7A00020640 /* shader.c in Sources */,
 				5EF01DCE19B03F7A00020640 /* ldebug.c in Sources */,
+				5EFEF6D31B93157E007E9D00 /* oal_decode.c in Sources */,
 				5EF01DC719B03F7A00020640 /* lauxlib.c in Sources */,
 				5EFC730F1A0241F10070CF52 /* render.c in Sources */,
 				5EF01D5419B03F4100020640 /* EJViewController.m in Sources */,
@@ -549,14 +614,17 @@
 				5EF01DD419B03F7A00020640 /* liolib.c in Sources */,
 				5EF01DD019B03F7A00020640 /* ldump.c in Sources */,
 				5EFC73101A0241F10070CF52 /* renderbuffer.c in Sources */,
+				5EFEF6DE1B931751007E9D00 /* lutf8lib.c in Sources */,
 				5EF01DCF19B03F7A00020640 /* ldo.c in Sources */,
 				5EF01DBD19B03F7A00020640 /* matrix.c in Sources */,
+				5EFEF6D11B93157E007E9D00 /* ad_wav.c in Sources */,
 				5EF01DCB19B03F7A00020640 /* lcorolib.c in Sources */,
 				5EF01DB719B03F7A00020640 /* fault.c in Sources */,
 				5EF01DD219B03F7A00020640 /* lgc.c in Sources */,
 				5EF01DD519B03F7A00020640 /* llex.c in Sources */,
 				5EF01DB619B03F7A00020640 /* ejoy2dgame.c in Sources */,
 				5EF01DCD19B03F7A00020640 /* ldblib.c in Sources */,
+				5EFEF6CE1B93157E007E9D00 /* ad_hardware_mac_ios.m in Sources */,
 				5E4507C919AEF021001BB86D /* AppDelegate.m in Sources */,
 				5EFC730C1A0241F10070CF52 /* lrenderbuffer.c in Sources */,
 				5E4507C519AEF021001BB86D /* main.m in Sources */,
@@ -564,6 +632,7 @@
 				5EF01DB919B03F7A00020640 /* lmatrix.c in Sources */,
 				5EF01DC119B03F7A00020640 /* screen.c in Sources */,
 				5EF01DE519B03F7A00020640 /* lzio.c in Sources */,
+				5EFEF6CF1B93157E007E9D00 /* ad_mp3.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -28,6 +28,8 @@ LOCAL_SRC_FILES += \
                    ../../../engine/lib/render/carray.c \
                    ../../../engine/lib/render/log.c \
                    ../../../engine/lib/render/render.c \
+                   ../../../engine/lib/lgeometry.c \
+                   ../../../engine/lib/screenshot.c \
                    ../../../engine/platform/winfw.c
 
 LOCAL_SRC_FILES += \
@@ -62,7 +64,8 @@ LOCAL_SRC_FILES += \
                    ../../../engine/lua/ltm.c \
                    ../../../engine/lua/lundump.c \
                    ../../../engine/lua/lvm.c \
-                   ../../../engine/lua/lzio.c
+                   ../../../engine/lua/lzio.c \
+                   ../../../engine/lua/lutf8lib.c
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH) \
                     $(LOCAL_PATH)/../../../engine/lib \

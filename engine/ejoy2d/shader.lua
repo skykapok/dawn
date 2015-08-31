@@ -202,6 +202,8 @@ local shader_name = {
 	BLEND = 6,
 }
 
+local shader_material = {}
+
 function shader.init()
 	s.load(shader_name.NORMAL, PRECISION .. sprite_fs, PRECISION .. sprite_vs)
 	s.load(shader_name.TEXT, PRECISION .. text_fs, PRECISION .. sprite_vs)
@@ -210,11 +212,13 @@ function shader.init()
 	s.load(shader_name.COLOR, PRECISION .. color_fs, PRECISION .. sprite_vs)
 	s.load(shader_name.BLEND, PRECISION .. blend_fs, PRECISION .. blend_vs)
 	s.load(shader_name.RENDERBUFFER, PRECISION .. renderbuffer_fs, PRECISION_HIGH .. renderbuffer_vs)
+	s.uniform_bind(shader_name.RENDERBUFFER, { { name = "st", type = 4} })	-- st must the first uniform (the type is float4/4)
 end
 
 shader.draw = s.draw
 shader.blend = s.blend
 shader.clear = s.clear
+shader.texture = s.shader_texture
 
 function shader.id(name)
 	local id = assert(shader_name[name] , "Invalid shader name " .. name)
@@ -251,6 +255,30 @@ local function create_shader(id, uniform)
 	end
 end
 
+local material_setuniform = s.material_setuniform
+local material_settexture = s.material_settexture
+
+local function material_meta(id, arg)
+	local uniform = arg.uniform
+	local meta
+	if uniform then
+		local index_table = {}
+		meta = { __index = index_table }
+		for index , u in ipairs(uniform) do
+			local loc = index-1
+			index_table[u.name] = function(self, ...)
+				material_setuniform(self.__obj, loc, ...)
+			end
+		end
+		if arg.texture then
+			index_table.texture = function(self, ...)
+				material_settexture(self.__obj, ...)
+			end
+		end
+	end
+	shader_material[id] = meta
+end
+
 function shader.define( arg )
 	local name = assert(arg.name)
 	local id = shader_name[name]
@@ -263,7 +291,7 @@ function shader.define( arg )
 	local vs = PRECISION .. (arg.vs or sprite_vs)
 	local fs = PRECISION_HIGH .. (arg.fs or sprite_fs)
 
-	s.load(id, fs, vs)
+	s.load(id, fs, vs, arg.texture)
 
 	local uniform = arg.uniform
 	if uniform then
@@ -275,7 +303,13 @@ function shader.define( arg )
 
 	local r = create_shader(id, uniform)
 	shader_name[name] = id
+
+	material_meta(id, arg)
 	return r
+end
+
+function shader.material_meta(prog)
+	return shader_material[prog]
 end
 
 return shader

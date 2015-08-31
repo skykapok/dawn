@@ -8,6 +8,7 @@
 #include "scissor.h"
 #include "array.h"
 #include "particle.h"
+#include "material.h"
 
 #include <string.h>
 #include <assert.h>
@@ -15,7 +16,7 @@
 #include <limits.h>
 
 void
-sprite_drawquad(struct pack_picture *picture, struct pack_picture *mask, const struct srt *srt,  const struct sprite_trans *arg) {
+sprite_drawquad(struct pack_picture *picture, const struct srt *srt,  const struct sprite_trans *arg) {
 	struct matrix tmp;
 	struct vertex_pack vb[4];
 	int i,j;
@@ -31,7 +32,7 @@ sprite_drawquad(struct pack_picture *picture, struct pack_picture *mask, const s
 		int glid = texture_glid(q->texid);
 		if (glid == 0)
 			continue;
-		shader_texture(glid);
+		shader_texture(glid, 0);
 		for (j=0;j<4;j++) {
 			int xx = q->screen_coord[j*2+0];
 			int yy = q->screen_coord[j*2+1];
@@ -45,13 +46,6 @@ sprite_drawquad(struct pack_picture *picture, struct pack_picture *mask, const s
 			vb[j].vy = vy;
 			vb[j].tx = tx;
 			vb[j].ty = ty;
-		}
-		if (mask != NULL) {
-				float tx = mask->rect[0].texture_coord[0];
-				float ty = mask->rect[0].texture_coord[1];
-				float delta_tx = (tx - vb[0].tx) * (1.0f / 65535.0f);
-				float delta_ty = (ty - vb[0].ty) * (1.0f / 65535.0f);
-				shader_mask(delta_tx, delta_ty);
 		}
 		shader_draw(vb, arg->color, arg->additive);
 	}
@@ -73,7 +67,7 @@ sprite_drawpolygon(struct pack_polygon *poly, const struct srt *srt, const struc
 		int glid = texture_glid(p->texid);
 		if (glid == 0)
 			continue;
-		shader_texture(glid);
+		shader_texture(glid, 0);
 		int pn = p->n;
 
 		ARRAY(struct vertex_pack, vb, pn);
@@ -120,6 +114,9 @@ sprite_action(struct sprite *s, const char * action) {
 	}
 	struct pack_animation *ani = s->s.ani;
 	if (action == NULL) {
+		if (ani->action == NULL) {
+			return -1;
+		}
 		s->start_frame = ani->action[0].start_frame;
 		s->total_frame = ani->action[0].number;
 		s->frame = 0;
@@ -150,16 +147,17 @@ sprite_init(struct sprite * s, struct sprite_pack * pack, int id, int sz) {
 	s->t.color = 0xffffffff;
 	s->t.additive = 0;
 	s->t.program = PROGRAM_DEFAULT;
-	s->message = false;
-	s->visible = true;
-	s->multimount = false;
+	s->flags = 0;
 	s->name = NULL;
 	s->id = id;
 	s->type = pack->type[id];
+	s->material = NULL;
 	if (s->type == TYPE_ANIMATION) {
 		struct pack_animation * ani = (struct pack_animation *)pack->data[id];
 		s->s.ani = ani;
 		s->frame = 0;
+		s->start_frame = 0;
+		s->total_frame = 0;
 		sprite_action(s, NULL);
 		int i;
 		int n = ani->component_number;
@@ -194,25 +192,33 @@ sprite_mount(struct sprite *parent, int index, struct sprite *child) {
 	parent->data.children[index] = child;
 	if (child) {
 		assert(child->parent == NULL);
-		if (!child->multimount) {
+		if ((child->flags & SPRFLAG_MULTIMOUNT) == 0) {
 			child->name = ani->component[index].name;
 			child->parent = parent;
 		}
-		if (oldc && oldc->type == TYPE_ANCHOR)
-			child->message = oldc->message;
+		if (oldc && oldc->type == TYPE_ANCHOR) {
+			if(oldc->flags & SPRFLAG_MESSAGE) {
+				child->flags |= SPRFLAG_MESSAGE;
+			} else {
+				child->flags &= ~SPRFLAG_MESSAGE;
+			}
+		}
 	}
 }
 
-static int
-real_frame(struct sprite *s) {
+static inline int
+get_frame(struct sprite *s) {
 	if (s->type != TYPE_ANIMATION) {
-		return 0;
+		return s->start_frame;
+	}
+	if (s->total_frame <= 0) {
+		return -1;
 	}
 	int f = s->frame % s->total_frame;
 	if (f < 0) {
 		f += s->total_frame;
 	}
-	return f;
+	return f + s->start_frame;
 }
 
 int
@@ -343,12 +349,12 @@ mat_mul(struct matrix *a, struct matrix *b, struct matrix *tmp) {
 }
 
 static void
-switch_program(struct sprite_trans *t, int def) {
+switch_program(struct sprite_trans *t, int def, struct material *m) {
 	int prog = t->program;
 	if (prog == PROGRAM_DEFAULT) {
 		prog = def;
 	}
-	shader_program(prog);
+	shader_program(prog, m);
 }
 
 static void
@@ -449,7 +455,7 @@ drawparticle(struct sprite *s, struct particle_system *ps, struct pack_picture *
 
 		s->t.mat = mat;
 		s->t.color = color;
-		sprite_drawquad(pic, NULL, NULL, &s->t);
+		sprite_drawquad(pic, NULL, &s->t);
 	}
 	shader_defaultblend();
 
@@ -458,29 +464,32 @@ drawparticle(struct sprite *s, struct particle_system *ps, struct pack_picture *
 }
 
 static int
-draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts) {
+draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts, struct material * material) {
 	struct sprite_trans temp;
 	struct matrix temp_matrix;
 	struct sprite_trans *t = sprite_trans_mul(&s->t, ts, &temp, &temp_matrix);
+	if (s->material) {
+		material = s->material;
+	} 
 	switch (s->type) {
 	case TYPE_PICTURE:
-		switch_program(t, PROGRAM_PICTURE);
-		sprite_drawquad(s->s.pic, s->data.mask, srt, t);
+		switch_program(t, PROGRAM_PICTURE, material);
+		sprite_drawquad(s->s.pic, srt, t);
 		return 0;
 	case TYPE_POLYGON:
-		switch_program(t, PROGRAM_PICTURE);
+		switch_program(t, PROGRAM_PICTURE, material);
 		sprite_drawpolygon(s->s.poly, srt, t);
 		return 0;
 	case TYPE_LABEL:
 		if (s->data.rich_text) {
 			t->program = PROGRAM_DEFAULT;	// label never set user defined program
-			switch_program(t, s->s.label->edge ? PROGRAM_TEXT_EDGE : PROGRAM_TEXT);
+			switch_program(t, s->s.label->edge ? PROGRAM_TEXT_EDGE : PROGRAM_TEXT, material);
 			label_draw(s->data.rich_text, s->s.label, srt, t);
 		}
 		return 0;
 	case TYPE_ANCHOR:
 		if (s->data.anchor->ps){
-			switch_program(t, PROGRAM_PICTURE);
+			switch_program(t, PROGRAM_PICTURE, material);
 			drawparticle(s, s->data.anchor->ps, s->data.anchor->pic, srt);
 		}
 		anchor_update(s, srt, t);
@@ -500,8 +509,11 @@ draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts) {
 		return 0;
 	}
 	// draw animation
+	int frame = get_frame(s);
+	if (frame < 0) {
+		return 0;
+	}
 	struct pack_animation *ani = s->s.ani;
-	int frame = real_frame(s) + s->start_frame;
 	struct pack_frame * pf = &ani->frame[frame];
 	int i;
 	int scissor = 0;
@@ -509,13 +521,13 @@ draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts) {
 		struct pack_part *pp = &pf->part[i];
 		int index = pp->component_id;
 		struct sprite * child = s->data.children[index];
-		if (child == NULL || child->visible == false) {
+		if (child == NULL || (child->flags & SPRFLAG_INVISIBLE)) {
 			continue;
 		}
 		struct sprite_trans temp2;
 		struct matrix temp_matrix2;
 		struct sprite_trans *ct = sprite_trans_mul(&pp->t, t, &temp2, &temp_matrix2);
-		scissor += draw_child(child, srt, ct);
+		scissor += draw_child(child, srt, ct, material);
 	}
 	for (i=0;i<scissor;i++) {
 		scissor_pop();
@@ -526,7 +538,10 @@ draw_child(struct sprite *s, struct srt *srt, struct sprite_trans * ts) {
 bool
 sprite_child_visible(struct sprite *s, const char * childname) {
 	struct pack_animation *ani = s->s.ani;
-	int frame = real_frame(s) + s->start_frame;
+	int frame = get_frame(s);
+	if (frame < 0) {
+		return false;
+	}
 	struct pack_frame * pf = &ani->frame[frame];
 	int i;
 	for (i=0;i<pf->n;i++) {
@@ -542,20 +557,20 @@ sprite_child_visible(struct sprite *s, const char * childname) {
 
 void
 sprite_draw(struct sprite *s, struct srt *srt) {
-	if (s->visible) {
-		draw_child(s, srt, NULL);
+	if ((s->flags & SPRFLAG_INVISIBLE) == 0) {
+		draw_child(s, srt, NULL, NULL);
 	}
 }
 
 void
 sprite_draw_as_child(struct sprite *s, struct srt *srt, struct matrix *mat, uint32_t color) {
-	if (s->visible) {
+	if ((s->flags & SPRFLAG_INVISIBLE) == 0) {
 		struct sprite_trans st;
 		st.mat = mat;
 		st.color = color;
 		st.additive = 0;
 		st.program = PROGRAM_DEFAULT;
-		draw_child(s, srt, &st);
+		draw_child(s, srt, &st, NULL);
 	}
 }
 
@@ -593,7 +608,10 @@ sprite_matrix(struct sprite * self, struct matrix *mat) {
 
 		struct matrix * child_mat = NULL;
 		struct pack_animation *ani = parent->s.ani;
-		int frame = real_frame(parent) + parent->start_frame;
+		int frame = get_frame(parent);
+		if (frame < 0) {
+			return;
+		}
 		struct pack_frame * pf = &ani->frame[frame];
 		int i;
 		for (i=0;i<pf->n;i++) {
@@ -721,14 +739,17 @@ child_aabb(struct sprite *s, struct srt *srt, struct matrix * mat, int aabb[4]) 
 	}
 	// draw animation
 	struct pack_animation *ani = s->s.ani;
-	int frame = real_frame(s) + s->start_frame;
+	int frame = get_frame(s);
+	if (frame < 0) {
+		return 0;
+	}
 	struct pack_frame * pf = &ani->frame[frame];
 	int i;
 	for (i=0;i<pf->n;i++) {
 		struct pack_part *pp = &pf->part[i];
 		int index = pp->component_id;
 		struct sprite * child = s->data.children[index];
-		if (child == NULL || child->visible == false) {
+		if (child == NULL || (child->flags & SPRFLAG_INVISIBLE)) {
 			continue;
 		}
 		struct matrix temp2;
@@ -742,7 +763,7 @@ child_aabb(struct sprite *s, struct srt *srt, struct matrix * mat, int aabb[4]) 
 void
 sprite_aabb(struct sprite *s, struct srt *srt, bool world_aabb, int aabb[4]) {
 	int i;
-	if (s->visible) {
+	if ((s->flags & SPRFLAG_INVISIBLE) == 0) {
 		struct matrix tmp;
 		if (world_aabb) {
 			sprite_matrix(s, &tmp);
@@ -840,7 +861,7 @@ check_child(struct sprite *s, struct srt *srt, struct matrix * t, struct pack_fr
 	struct pack_part *pp = &pf->part[i];
 	int index = pp->component_id;
 	struct sprite * child = s->data.children[index];
-	if (child == NULL || !child->visible) {
+	if (child == NULL || (child->flags & SPRFLAG_INVISIBLE)) {
 		return 0;
 	}
 	struct matrix temp2;
@@ -866,7 +887,10 @@ check_child(struct sprite *s, struct srt *srt, struct matrix * t, struct pack_fr
 static int
 test_animation(struct sprite *s, struct srt *srt, struct matrix * t, int x, int y, struct sprite ** touch) {
 	struct pack_animation *ani = s->s.ani;
-	int frame = real_frame(s) + s->start_frame;
+	int frame = get_frame(s);
+	if (frame < 0) {
+		return 0;
+	}
 	struct pack_frame * pf = &ani->frame[frame];
 	int start = pf->n-1;
 	do {
@@ -877,7 +901,7 @@ test_animation(struct sprite *s, struct srt *srt, struct matrix * t, int x, int 
 			struct pack_part *pp = &pf->part[i];
 			int index = pp->component_id;
 			struct sprite * c = s->data.children[index];
-			if (c == NULL || !c->visible) {
+			if (c == NULL || (c->flags & SPRFLAG_INVISIBLE)) {
 				continue;
 			}
 			if (c->type == TYPE_PANNEL && c->data.scissor) {
@@ -917,7 +941,7 @@ test_child(struct sprite *s, struct srt *srt, struct matrix * ts, int x, int y, 
 			*touch = tmp;
 			return 1;
 		} else if (tmp) {
-			if (s->message) {
+			if (s->flags & SPRFLAG_MESSAGE) {
 				*touch = s;
 				return 1;
 			} else {
@@ -970,7 +994,7 @@ test_child(struct sprite *s, struct srt *srt, struct matrix * ts, int x, int y, 
 
 	if (testin) {
 		*touch = tmp;
-		return s->message;
+		return s->flags & SPRFLAG_MESSAGE;
 	} else {
 		*touch = NULL;
 		return 0;
@@ -990,6 +1014,28 @@ sprite_test(struct sprite *s, struct srt *srt, int x, int y) {
 	return NULL;
 }
 
+static inline int
+propagate_frame(struct sprite *s, int i, bool force_child) {
+	struct sprite *child = s->data.children[i];
+	if (child == NULL || child->type != TYPE_ANIMATION) {
+		return 0;
+	}
+	if (child->flags & SPRFLAG_FORCE_INHERIT_FRAME) {
+		return 1;
+	}
+	struct pack_animation * ani = s->s.ani;
+	if (ani->component[i].id == ANCHOR_ID) {
+		return 0;
+	}
+	if (force_child) {
+		return 1;
+	}
+	if (ani->component[i].name == NULL) {
+		return 1;
+	}
+	return 0;
+}
+
 int
 sprite_setframe(struct sprite *s, int frame, bool force_child) {
 	if (s == NULL || s->type != TYPE_ANIMATION)
@@ -999,8 +1045,7 @@ sprite_setframe(struct sprite *s, int frame, bool force_child) {
 	int i;
 	struct pack_animation * ani = s->s.ani;
 	for (i=0;i<ani->component_number;i++) {
-		if (ani->component[i].id != ANCHOR_ID &&
-				(force_child || ani->component[i].name == NULL)) {
+		if (propagate_frame(s, i, force_child)) {
 			int t = sprite_setframe(s->data.children[i],frame, force_child);
 			if (t > total_frame) {
 				total_frame = t;
@@ -1009,3 +1054,9 @@ sprite_setframe(struct sprite *s, int frame, bool force_child) {
 	}
 	return total_frame;
 }
+
+int 
+sprite_material_size(struct sprite *s) {
+	return material_size(s->t.program);
+}
+

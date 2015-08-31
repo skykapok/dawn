@@ -179,8 +179,11 @@ function pkg_mt:_serialize_animation(id, name, data)
 	local str_c = ""  -- component section
 	for _,com in ipairs(idx2com) do
 		local item = self.items[com]
-		assert(item, "item <"..com.."> not exist, refered in animation <"..self.name..">")
-		str_c = string.format("%s\t\t{ id = %d },\n", str_c, item.id)  -- one component one line
+		if item then
+			str_c = string.format("%s\t\t{ id = %d, name = \"%s\" },\n", str_c, item.id, com)  -- one component one line
+		else
+			str_c = string.format("%s\t\t{ name = \"%s\" },\n", str_c, com)  -- anchor
+		end
 	end
 
 	return string.format(TEMPLATE_ANIMATION, id, name, str_c, str_a)

@@ -23,33 +23,30 @@ local SKY_TEX_H = 1
 local SEA_TEX_W = 64
 local SEA_TEX_H = 64
 
-local SL8 = math.pow(2, 8)
-local SL16 = math.pow(2, 16)
-local SL24 = math.pow(2, 24)
 local PIOVER12 = math.pi / 12
 
 local M = {}
 
 local function _mix1(c1, c2, f)
-	return c1*(1-f) + c2*f
+	return c1 * (1 - f) + c2 * f
 end
 
 local function _mix4(c1, c2, f)
 	return {
-		c1[1]*(1-f) + c2[1]*f,
-		c1[2]*(1-f) + c2[2]*f,
-		c1[3]*(1-f) + c2[3]*f,
-		c1[4]*(1-f) + c2[4]*f,
+		c1[1] * (1 - f) + c2[1] * f,
+		c1[2] * (1 - f) + c2[2] * f,
+		c1[3] * (1 - f) + c2[3] * f,
+		c1[4] * (1 - f) + c2[4] * f,
 	}
 end
 
 local function _mixc(c1, c2, f)
 	local c = _mix4(c1, c2, f)
 	return
-		math.floor(c[4]*255) * SL24 +
-		math.floor(c[1]*255) * SL16 +
-		math.floor(c[2]*255) * SL8 +
-		math.floor(c[3]*255)
+		(math.floor(c[4] * 255) << 24) +
+		(math.floor(c[1] * 255) << 16) +
+		(math.floor(c[2] * 255) << 8) +
+		math.floor(c[3] * 255)
 end
 
 function M:init()
@@ -154,7 +151,7 @@ function M:update_sim()
 	local h = math.floor(self.v_time)
 	local m = self.v_time - h
 
-	self.v_label.text = format("%02d:%02d", h, m*60)
+	self.v_label.text = format("%02d:%02d", h, math.floor(m * 60))
 
 	local s1 = CONFIG[h+1]
 	local s2 = CONFIG[h+2]
@@ -176,7 +173,7 @@ function M:update_sim()
 		for i=1,100 do
 			local a = self.v_star_a[i]
 			a = a * (math.random()*0.4 + 0.6) * fa
-			self.v_stars[i].color = 0xffffff + math.floor(a*255) * SL24
+			self.v_stars[i].alpha = math.floor(a * 255)
 			self.v_stars[i]:draw()
 		end
 	end

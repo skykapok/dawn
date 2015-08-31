@@ -23,6 +23,13 @@ struct vertex_attrib {
 	int offset;
 };
 
+struct shader_init_args {
+	const char * vs;
+	const char * fs;
+	int texture;
+	const char **texture_uniform;
+};
+
 enum RENDER_OBJ {
 	INVALID = 0,
 	VERTEXLAYOUT = 1,
@@ -118,7 +125,7 @@ RID render_buffer_create(struct render *R, enum RENDER_OBJ what, const void *dat
 void render_buffer_update(struct render *R, RID id, const void * data, int n);
 
 RID render_texture_create(struct render *R, int width, int height, enum TEXTURE_FORMAT format, enum TEXTURE_TYPE type, int mipmap);
-void render_texture_update(struct render *R, RID id, const void *pixels, int slice, int miplevel);
+void render_texture_update(struct render *R, RID id, int width, int height, const void *pixels, int slice, int miplevel);
 // subupdate only support slice 0, miplevel 0
 void render_texture_subupdate(struct render *R, RID id, const void *pixels, int x, int y, int w, int h);
 
@@ -126,7 +133,7 @@ RID render_target_create(struct render *R, int width, int height, enum TEXTURE_F
 // render_release TARGET would not release the texture attachment
 RID render_target_texture(struct render *R, RID rt);
 
-RID render_shader_create(struct render *R, const char *vs, const char *fs);
+RID render_shader_create(struct render *R, struct shader_init_args *args);
 void render_shader_bind(struct render *R, RID id);
 int render_shader_locuniform(struct render *R, const char * name);
 void render_shader_setuniform(struct render *R, int loc, enum UNIFORM_FORMAT format, const float *v);

@@ -8,6 +8,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define SPRFLAG_INVISIBLE           (1)
+#define SPRFLAG_MESSAGE             (2)
+#define SPRFLAG_MULTIMOUNT          (4)
+#define SPRFLAG_FORCE_INHERIT_FRAME (8)
+
+struct material;
+
 struct anchor_data {
 	struct particle_system *ps;
 	struct pack_picture *pic;
@@ -31,21 +38,19 @@ struct sprite {
 	int start_frame;
 	int total_frame;
 	int frame;
-	bool visible;
-	bool message;
-	bool multimount;
+	int flags;
 	const char *name;	// name for parent
+	struct material *material;
 	union {
 		struct sprite * children[1];
 		struct rich_text * rich_text;
 		int scissor;
-		struct pack_picture *mask;  //for picture only
 		struct anchor_data *anchor;
 	} data;
 };
 
 struct sprite_trans * sprite_trans_mul(struct sprite_trans *a, struct sprite_trans *b, struct sprite_trans *t, struct matrix *tmp_matrix);
-void sprite_drawquad(struct pack_picture *picture, struct pack_picture *mask, const struct srt *srt, const struct sprite_trans *arg);
+void sprite_drawquad(struct pack_picture *picture, const struct srt *srt, const struct sprite_trans *arg);
 void sprite_drawpolygon(struct pack_polygon *poly, const struct srt *srt, const struct sprite_trans *arg);
 
 // sprite_size must be call before sprite_init
@@ -74,6 +79,7 @@ int sprite_pos(struct sprite *s, struct srt *srt, struct matrix *m, int pos[2]);
 void sprite_matrix(struct sprite *s, struct matrix *mat);
 
 bool sprite_child_visible(struct sprite *s, const char * childname);
+int sprite_material_size(struct sprite *s);
 
 int ejoy2d_sprite(lua_State *L);
 

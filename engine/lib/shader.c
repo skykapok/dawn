@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "material.h"
 #include "fault.h"
 #include "array.h"
 #include "renderbuffer.h"
@@ -15,31 +16,37 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #define MAX_PROGRAM 16
 
-#define BUFFER_OFFSET(f) ((int)&(((struct vertex *)NULL)->f))
+#define BUFFER_OFFSET(f) ((intptr_t)&(((struct vertex *)NULL)->f))
 
 #define MAX_UNIFORM 16
+#define MAX_TEXTURE_CHANNEL 8
 
 struct uniform {
 	int loc;
+	int offset;
 	enum UNIFORM_FORMAT type;
 };
 
 struct program {
 	RID prog;
-	int mask;
-	int st;
+	struct material * material;
+	int texture_number;
 	int uniform_number;
 	struct uniform uniform[MAX_UNIFORM];
+	bool reset_uniform;
+	bool uniform_change[MAX_UNIFORM];
+	float uniform_value[MAX_UNIFORM * 16];
 };
 
 struct render_state {
 	struct render * R;
 	int current_program;
 	struct program program[MAX_PROGRAM];
-	RID tex;
+	RID tex[MAX_TEXTURE_CHANNEL];
 	int blendchange;
 	int drawcall;
 	RID vertex_buffer;
@@ -49,6 +56,8 @@ struct render_state {
 };
 
 static struct render_state *RS = NULL;
+
+void lsprite_initrender(struct render *r);
 
 void
 shader_init() {
@@ -71,6 +80,7 @@ shader_init() {
 	texture_initrender(rs->R);
 	screen_initrender(rs->R);
 	label_initrender(rs->R);
+	lsprite_initrender(rs->R);
 	renderbuffer_initrender(rs->R);
 
 	rs->current_program = -1;
@@ -114,24 +124,27 @@ shader_reset() {
 		render_shader_bind(rs->R, RS->program[RS->current_program].prog);
 	}
 	render_set(rs->R, VERTEXLAYOUT, rs->layout, 0);
-	render_set(rs->R, TEXTURE, RS->tex, 0);
+	render_set(rs->R, TEXTURE, RS->tex[0], 0);
 	render_set(rs->R, INDEXBUFFER, RS->index_buffer,0);
 	render_set(rs->R, VERTEXBUFFER, RS->vertex_buffer,0);
 }
 
 static void
-program_init(struct program * p, const char *FS, const char *VS) {
+program_init(struct program * p, const char *FS, const char *VS, int texture, const char ** texture_uniform_name) {
 	struct render *R = RS->R;
-	p->prog = render_shader_create(R, VS, FS);
+	memset(p, 0, sizeof(*p));
+	struct shader_init_args args;
+	args.vs = VS;
+	args.fs = FS;
+	args.texture = texture;
+	args.texture_uniform = texture_uniform_name;
+	p->prog = render_shader_create(R, &args);
 	render_shader_bind(R, p->prog);
-
-	p->mask = render_shader_locuniform(R, "mask");
-	p->st = render_shader_locuniform(R, "st");
 	render_shader_bind(R, 0);
 }
 
 void 
-shader_load(int prog, const char *fs, const char *vs) {
+shader_load(int prog, const char *fs, const char *vs, int texture, const char ** texture_uniform_name) {
 	struct render_state *rs = RS;
 	assert(prog >=0 && prog < MAX_PROGRAM);
 	struct program * p = &rs->program[prog];
@@ -139,7 +152,8 @@ shader_load(int prog, const char *fs, const char *vs) {
 		render_release(RS->R, SHADER, p->prog);
 		p->prog = 0;
 	}
-	program_init(p, fs, vs);
+	program_init(p, fs, vs, texture, texture_uniform_name);
+	p->texture_number = texture;
 	RS->current_program = -1;
 }
 
@@ -152,6 +166,7 @@ shader_unload() {
 	texture_initrender(NULL);
 	screen_initrender(NULL);
 	label_initrender(NULL);
+	lsprite_initrender(NULL);
 	renderbuffer_initrender(NULL);
 
 	render_exit(R);
@@ -202,18 +217,20 @@ shader_drawbuffer(struct render_buffer * rb, float tx, float ty, float scale) {
 	RID glid = texture_glid(rb->texid);
 	if (glid == 0)
 		return;
-	shader_texture(glid);
-	shader_program(PROGRAM_RENDERBUFFER);
-	RS->drawcall++;
+	shader_texture(glid, 0);
 	render_set(RS->R, VERTEXBUFFER, rb->vbid, 0);
 
 	float sx = scale;
 	float sy = scale;
 	screen_trans(&sx, &sy);
 	screen_trans(&tx, &ty);
-	struct program *p = &RS->program[RS->current_program];
 	float v[4] = { sx, sy, tx, ty };
-	render_shader_setuniform(RS->R, p->st, UNIFORM_FLOAT4, v);
+
+	// we should call shader_adduniform to add "st" uniform first
+	shader_setuniform(PROGRAM_RENDERBUFFER, 0, UNIFORM_FLOAT4, v);
+
+	shader_program(PROGRAM_RENDERBUFFER, NULL);
+	RS->drawcall++;
 
 	renderbuffer_commit(rb);
 
@@ -221,42 +238,46 @@ shader_drawbuffer(struct render_buffer * rb, float tx, float ty, float scale) {
 }
 
 void
-shader_texture(int id) {
-	if (RS->tex != id) {
+shader_texture(int id, int channel) {
+	assert(channel < MAX_TEXTURE_CHANNEL);
+	if (RS->tex[channel] != id) {
 		rs_commit();
-		RS->tex = id;
-		render_set(RS->R, TEXTURE, id, 0);
+		RS->tex[channel] = id;
+		render_set(RS->R, TEXTURE, id, channel);
 	}
 }
 
+static void
+apply_uniform(struct program *p) {
+	struct render *R = RS->R;
+	int i;
+	for (i=0;i<p->uniform_number;i++) {
+		if (p->uniform_change[i]) {
+			struct uniform * u = &p->uniform[i];
+			if (u->loc >=0) 
+				render_shader_setuniform(R, u->loc, u->type, p->uniform_value + u->offset);
+		}
+	}
+	p->reset_uniform = false;
+}
+
 void
-shader_program(int n) {
+shader_program(int n, struct material *m) {
+	struct program *p = &RS->program[n];
+	if (RS->current_program != n || p->reset_uniform || m) {
+		rs_commit();
+	}
 	if (RS->current_program != n) {
-		rs_commit();
 		RS->current_program = n;
-		render_shader_bind(RS->R, RS->program[RS->current_program].prog);
+		render_shader_bind(RS->R, p->prog);
+		p->material = NULL;
+		apply_uniform(p);
+	} else if (p->reset_uniform) {
+		apply_uniform(p);
 	}
-}
-
-void
-shader_mask(float x, float y) {
-	struct program *p = &RS->program[RS->current_program];
-	if (!p || p->mask == -1)
-		return;
-	float v[2] = { x, y};
-	render_shader_setuniform(RS->R, p->mask, UNIFORM_FLOAT2, v);
-}
-
-void
-shader_st(int prog, float x, float y, float scale) {
-	rs_commit();
-    shader_program(prog);
-    struct program *p = &RS->program[prog];
-
-    if (!p || p->st == -1)
-        return;
-	float v[4] = { scale, scale, x, y };
-	render_shader_setuniform(RS->R, p->mask, UNIFORM_FLOAT4, v);
+	if (m) {
+		material_apply(n, m);
+	}
 }
 
 void
@@ -329,31 +350,157 @@ shader_scissortest(int enable) {
 	render_enablescissor(RS->R, enable);
 }
 
+int 
+shader_uniformsize(enum UNIFORM_FORMAT t) {
+	int n = 0;
+	switch(t) {
+	case UNIFORM_INVALID:
+		n = 0;
+		break;
+	case UNIFORM_FLOAT1:
+		n = 1;
+		break;
+	case UNIFORM_FLOAT2:
+		n = 2;
+		break;
+	case UNIFORM_FLOAT3:
+		n = 3;
+		break;
+	case UNIFORM_FLOAT4:
+		n = 4;
+		break;
+	case UNIFORM_FLOAT33:
+		n = 9;
+		break;
+	case UNIFORM_FLOAT44:
+		n = 16;
+		break;
+	}
+	return n;
+}
+
 void 
-shader_setuniform(int index, enum UNIFORM_FORMAT t, float *v) {
+shader_setuniform(int prog, int index, enum UNIFORM_FORMAT t, float *v) {
 	rs_commit();
-	int prog = RS->current_program;
-	assert(prog >=0 && prog < MAX_PROGRAM);
 	struct program * p = &RS->program[prog];
 	assert(index >= 0 && index < p->uniform_number);
 	struct uniform *u = &p->uniform[index];
 	assert(t == u->type);
-	render_shader_setuniform(RS->R, u->loc, t, v);
+	int n = shader_uniformsize(t);
+	memcpy(p->uniform_value + u->offset, v, n * sizeof(float));
+	p->reset_uniform = true;
+	p->uniform_change[index] = true;
 }
 
 int 
 shader_adduniform(int prog, const char * name, enum UNIFORM_FORMAT t) {
 	// reset current_program
 	assert(prog >=0 && prog < MAX_PROGRAM);
-	shader_program(prog);
+	shader_program(prog, NULL);
 	struct program * p = &RS->program[prog];
 	assert(p->uniform_number < MAX_UNIFORM);
 	int loc = render_shader_locuniform(RS->R, name);
-	if (loc < 0)
-		return -1;
 	int index = p->uniform_number++;
 	struct uniform * u = &p->uniform[index];
 	u->loc = loc;
 	u->type = t;
+	if (index == 0) {
+		u->offset = 0;
+	} else {
+		struct uniform * lu = &p->uniform[index-1];
+		u->offset = lu->offset + shader_uniformsize(lu->type);
+	}
+	if (loc < 0)
+		return -1;
 	return index;
+}
+
+// material system
+
+struct material {
+	struct program *p;
+	int texture[MAX_TEXTURE_CHANNEL];
+	bool uniform_enable[MAX_UNIFORM];
+	float uniform[1];
+};
+
+int 
+material_size(int prog) {
+	if (prog < 0 || prog >= MAX_PROGRAM)
+		return 0;
+	struct program *p = &RS->program[prog];
+	if (p->uniform_number == 0 && p->texture_number == 0) {
+		return 0;
+	}
+	struct uniform * lu = &p->uniform[p->uniform_number-1];
+	int total = lu->offset + shader_uniformsize(lu->type);
+	return sizeof(struct material) + (total-1) * sizeof(float);
+}
+
+struct material * 
+material_init(void *self, int size, int prog) {
+	int rsz = material_size(prog);
+	struct program *p = &RS->program[prog];
+	assert(size >= rsz);
+	memset(self, 0, rsz);
+	struct material * m = (struct material *)self;
+	m->p = p;
+	int i;
+	for (i=0;i<MAX_TEXTURE_CHANNEL;i++) {
+		m->texture[i] = -1;
+	}
+
+	return m;
+}
+
+int 
+material_setuniform(struct material *m, int index, int n, const float *v) {
+	struct program * p = m->p;
+	assert(index >= 0 && index < p->uniform_number);
+	struct uniform * u = &p->uniform[index];
+	if (shader_uniformsize(u->type) != n) {
+		return 1;
+	}
+	memcpy(m->uniform + u->offset, v, n * sizeof(float));
+	m->uniform_enable[index] = true;
+	return 0;
+}
+
+void 
+material_apply(int prog, struct material *m) {
+	struct program * p = m->p;
+	if (p != &RS->program[prog])
+		return;
+	if (p->material == m) {
+		return;
+	}
+	p->material = m;
+	p->reset_uniform = true;
+	int i;
+	for (i=0;i<p->uniform_number;i++) {
+		if (m->uniform_enable[i]) {
+			struct uniform * u = &p->uniform[i];
+			if (u->loc >=0) {
+				render_shader_setuniform(RS->R, u->loc, u->type, m->uniform + u->offset);
+			}
+		}
+	}
+	for (i=0;i<p->texture_number;i++) {
+		int tex = m->texture[i];
+		if (tex >= 0) {
+			RID glid = texture_glid(tex);
+			if (glid) {
+				shader_texture(glid, i);
+			}
+		}
+	}
+}
+
+int
+material_settexture(struct material *m, int channel, int texture) {
+	if (channel >= MAX_TEXTURE_CHANNEL) {
+		return 1;
+	}
+	m->texture[channel] = texture;
+	return 0;
 }
